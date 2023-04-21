@@ -5,11 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 @Slf4j
 @EqualsAndHashCode
-public class ParsedCmdProperties {
+public class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
     private final List<ParsedCmdProperty> properties = new ArrayList<>();
 
     @SuppressWarnings("java:S3776")
@@ -129,5 +130,9 @@ public class ParsedCmdProperties {
             sb.append(" ");
         }
         return sb.toString();
+    }
+
+    public Iterator<ParsedCmdProperty> iterator() {
+        return properties.iterator();
     }
 }

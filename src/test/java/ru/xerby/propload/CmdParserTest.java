@@ -4,6 +4,9 @@ package ru.xerby.propload;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CmdParserTest {
 
     @Test
@@ -210,5 +213,25 @@ public class CmdParserTest {
         Assert.assertNull("Can't find all non-existent key", props.getParsedCmdProperty("dead"));
     }
 
+    @Test
+    public void testToStringAndIterator() {
+        var props = new ParsedCmdProperties();
+
+        props.add("delayed", "5min", false);
+        props.add("mail");
+        props.add("no-ops", "false", true);
+
+        List<String> strings = new ArrayList<>();
+
+        strings.add("delayed:5min");
+        strings.add("mail");
+        strings.add("no-ops=false");
+
+        for (ParsedCmdProperty prop : props) {
+            Assert.assertTrue("Check toString() method " + prop.getKey(), strings.contains(prop.toString()));
+            strings.remove(prop.toString());
+        }
+
+    }
 
 }
