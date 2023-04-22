@@ -35,11 +35,38 @@ public class PropertyLoader {
                     continue;
 
             if (parsedCmdProperty.isSurelyParametrized() || isParametrizedWithoutEqualSignAllowed) {
+                checkValueType(parsedCmdProperty.getKey(), parsedCmdProperty.getValue(), propertyDescription.getParamType());
                 properties.put(parsedCmdProperty.getKey(), parsedCmdProperty.getValue());
             } else if (parsedCmdProperty.getValue() == null)
                 properties.put(parsedCmdProperty.getKey(), null);
             else
                 throw new IllegalArgumentException("Property " + parsedCmdProperty.getKey() + " is parametrized without equal sign, but it's prohibited");
+        }
+    }
+
+    @SuppressWarnings({"ResultOfMethodCallIgnored", "java:S2201"})
+    protected void checkValueType(String propName, String propValue, PropertyDescription.ParamType paramType) {
+        if (propValue == null) return;
+        if (paramType == null)
+            throw new IllegalArgumentException("Property " + propName + " is not parametrized, but it's value is " + propValue);
+
+        switch (paramType) {
+            case STRING:
+                break;
+            case INTEGER:
+                Integer.parseInt(propValue);
+                break;
+            case BOOLEAN:
+                String token = propValue.strip().toLowerCase();
+                if (!token.equals("true") && !token.equals("false") && !token.equals("t") && !token.equals("f")
+                        && !token.equals("yes") && !token.equals("no") && !token.equals("y") && !token.equals("n"))
+                    throw new IllegalArgumentException("Unknown boolean value " + propValue + " for property " + propName);
+                break;
+            case FLOAT:
+                Double.parseDouble(propValue);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown param type " + paramType + " for property " + propName);
         }
     }
 }
