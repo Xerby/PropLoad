@@ -1,9 +1,17 @@
 package ru.xerby.propload;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+
+import java.io.File;
+import java.net.URISyntaxException;
 
 public class PropertyLoaderTest {
+
+    @Rule
+    public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     @Test
     public void loadFromCmdArgsWindowsCompatibilityOptionTest() {
@@ -141,6 +149,186 @@ public class PropertyLoaderTest {
                 new String[]{"--TTL", "5", "--SCHEDULED", "--DEBUG", "false", "--DB_PASSWORD", "password", "--DN", "4,087"}));
         Assert.assertThrows(IllegalArgumentException.class, () -> propertyLoader.loadFromCmdArgs(
                 new String[]{"--DELAYED", "5min", "--SCHEDULED", "--DEBUG", "false", "--DB_PASSWORD", "password", "--DN", "4,087"}));
+    }
 
+    @Test
+    public void loadFromEnvironmentEmptyTest() {
+        //we use long and bizarre names for properties to check that we don't accidentally affect real environmental variables
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepositoryWithLongNames();
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        propertyLoader.loadFromEnvironment();
+        Assert.assertEquals("Check that we don't load any property, because environmental variables don't contain properties with such names",
+                0, propertyLoader.getProperties().size());
+    }
+
+    @Test
+    public void loadFromEnvironmentParamTypesTest() {
+        //we use long and bizarre names for properties to check that we don't accidentally affect real environmental variables
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepositoryWithLongNames();
+        environmentVariables.set("CAN_YOU_SEE_THIS_DB_USER", "Egor");
+        environmentVariables.set("DELAYED_ON_SEVEN_MINUTES", "");
+        environmentVariables.set("DEBUG_OR_NOT_DEBUG", "false");
+        environmentVariables.set("TTL_PPL_ZZB_MGG", "5");
+        environmentVariables.set("DNskfjsadkfasjdflsafj", "3.1415");
+        environmentVariables.set("InsaneMadCrazyThing", "Opa");
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        propertyLoader.loadFromEnvironment();
+        Assert.assertEquals("Check that we we have only 5 properties",
+                5, propertyLoader.getProperties().size());
+        Assert.assertTrue("Check parameterless property exists",
+                propertyLoader.getProperties().containsKey("DELAYED_ON_SEVEN_MINUTES"));
+        Assert.assertNull("Check parameterless property",
+                propertyLoader.getProperties().get("DELAYED_ON_SEVEN_MINUTES"));
+        Assert.assertFalse("Check boolean property", Boolean.parseBoolean(propertyLoader.getProperties().get("DEBUG_OR_NOT_DEBUG")));
+        Assert.assertEquals("Check integer property",
+                5, Integer.parseInt(propertyLoader.getProperties().get("TTL_PPL_ZZB_MGG")));
+        Assert.assertEquals("Check float property",
+                3.1415, Double.parseDouble(propertyLoader.getProperties().get("DNskfjsadkfasjdflsafj")), 0.1);
+        Assert.assertNull("Check that we don't load a redundant property",
+                propertyLoader.getProperties().get("InsaneMadCrazyThing"));
+    }
+
+    @Test
+    public void loadFromEnvironmentWithPrefixParamTypesTest() {
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        environmentVariables.set("test_for_prefix.DB_USER", "Egor");
+        environmentVariables.set("test_for_prefix.DELAYED", "");
+        environmentVariables.set("test_for_prefix.DEBUG", "false");
+        environmentVariables.set("test_for_prefix.TTL", "5");
+        environmentVariables.set("test_for_prefix.DN", "3.1415");
+        environmentVariables.set("test_for_prefix.REDUNDANT", "BUM");
+//        environmentVariables.set("test_for_prefix.INSANE", "Opa"); //we don't set this property to check that we don't load it
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
+        propertyLoader.setThrowExceptionIfUnknownEnvPropertyFound(false);
+        propertyLoader.loadFromEnvironment();
+        Assert.assertEquals("Check that we we have only 5 properties",
+                5, propertyLoader.getProperties().size());
+        Assert.assertEquals("Check string property",
+                "Egor", propertyLoader.getProperties().get("DB_USER"));
+        Assert.assertTrue("Check parameterless property exists",
+                propertyLoader.getProperties().containsKey("DELAYED"));
+        Assert.assertNull("Check parameterless property",
+                propertyLoader.getProperties().get("DELAYED"));
+        Assert.assertFalse("Check boolean property", Boolean.parseBoolean(propertyLoader.getProperties().get("DEBUG")));
+        Assert.assertEquals("Check integer property",
+                5, Integer.parseInt(propertyLoader.getProperties().get("TTL")));
+        Assert.assertEquals("Check float property",
+                3.1415, Double.parseDouble(propertyLoader.getProperties().get("DN")), 0.1);
+        Assert.assertNull("Check that we don't load a redundant property",
+                propertyLoader.getProperties().get("REDUNDANT"));
+        Assert.assertNull("Check that we don't load a field that is not in property registry",
+                propertyLoader.getProperties().get("INSANE"));
+    }
+
+    @Test
+    public void loadFromEnvironmentWithPrefixRedundantPropertyTest() {
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        environmentVariables.set("test_for_prefix.DB_USER", "Egor");
+        environmentVariables.set("test_for_prefix.DELAYED", "");
+        environmentVariables.set("test_for_prefix.DEBUG", "false");
+        environmentVariables.set("test_for_prefix.TTL", "5");
+        environmentVariables.set("test_for_prefix.DN", "3.1415");
+        environmentVariables.set("test_for_prefix.REDUNDANT", "BUM");
+//        environmentVariables.set("test_for_prefix.INSANE", "Opa");
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
+//        propertyLoader.setThrowExceptionIfUnknownEnvPropertyFound(true) - by default
+        try {
+            propertyLoader.loadFromEnvironment();
+        } catch (RuntimeException e) {
+            Assert.assertTrue("Check that if environment prefix is set and setThrowExceptionIfUnknownEnvPropertyFound is true (by default) +" +
+                            "redundant property cause exception with words \"unknown property\" and property name and prefix",
+                    e.getMessage().contains("Unknown property \"REDUNDANT\"") && e.getMessage().contains("prefix \"test_for_prefix.\""));
+        }
+    }
+
+    @Test
+    public void loadFromPropertyErroneousIntCheckTypesTest() {
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+
+        environmentVariables.set("test_for_prefix.DB_USER", "Egor");
+        environmentVariables.set("test_for_prefix.DEBUG", "false");
+        environmentVariables.set("test_for_prefix.TTL", "5g");
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
+        try {
+            propertyLoader.loadFromEnvironment();
+        } catch (NumberFormatException e) {
+            Assert.assertEquals("For input string: \"5g\"", e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void loadFromPropertyErroneousBooleanCheckTypesTest() {
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+
+        environmentVariables.set("test_for_prefix.DB_USER", "Egor");
+        environmentVariables.set("test_for_prefix.DELAYED", "");
+        environmentVariables.set("test_for_prefix.DEBUG", "5");
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
+        try {
+            propertyLoader.loadFromEnvironment();
+        } catch (Exception e) {
+            Assert.assertEquals("Unknown boolean value 5 for property DEBUG", e.getMessage());
+        }
+    }
+
+    @Test
+    public void loadFromPropertyErroneousDoubleCheckTypesTest() {
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+
+        environmentVariables.set("test_for_prefix.DEBUG", "false");
+        environmentVariables.set("test_for_prefix.TTL", "5,55");
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
+        try {
+            propertyLoader.loadFromEnvironment();
+        } catch (NumberFormatException e) {
+            Assert.assertEquals("For input string: \"5,55\"", e.getMessage());
+        }
+    }
+
+    @Test
+    public void loadFromPropertyErroneousParameterlessCheckTypesTest() {
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+
+        environmentVariables.set("test_for_prefix.DELAYED", "Egor");
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
+        try {
+            propertyLoader.loadFromEnvironment();
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Property DELAYED is not parametrized, but it's value is Egor", e.getMessage());
+        }
+    }
+
+    @Test
+    public void loadFromPropertiesFromFile() throws URISyntaxException {
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+
+        File file = new File(getClass().getClassLoader().getResource("properties.properties").toURI());
+        propertyLoader.loadFromFile(file);
+
+        Assert.assertEquals(5, propertyLoader.getProperties().size());
+        Assert.assertEquals("Nongor", propertyLoader.getProperties().get("DB_USER"));
+        Assert.assertTrue(propertyLoader.getProperties().containsKey("DELAYED"));
+        Assert.assertNull(propertyLoader.getProperties().get("DELAYED"));
+        Assert.assertFalse(Boolean.parseBoolean(propertyLoader.getProperties().get("DEBUG")));
+        Assert.assertEquals(5, Integer.parseInt(propertyLoader.getProperties().get("TTL")));
+        Assert.assertEquals(3.1415, Double.parseDouble(propertyLoader.getProperties().get("DN")), 0.1);
+        Assert.assertNull(propertyLoader.getProperties().get("REDUNDANT"));
+        Assert.assertNull(propertyLoader.getProperties().get("INSANE"));
     }
 }
