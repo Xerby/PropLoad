@@ -30,7 +30,7 @@ public class PropertyYamlTest {
             propertyRepository.clear();
 
             propertyRepository = PropertyRepository.loadFromYamlFile(file);
-            Assert.assertEquals("Check that all properties were loaded", 6, propertyRepository.size());
+            Assert.assertEquals("Check that all properties were loaded", 10, propertyRepository.size());
 
             PropertyDescription dbPath = propertyRepository.get("DB_PATH");
             Assert.assertEquals("Check name of parametrized property", "DB_PATH", dbPath.getName());
@@ -83,7 +83,7 @@ public class PropertyYamlTest {
             propertyRepository.clear();
 
             propertyRepository = PropertyRepository.loadFromYamlFile(file);
-            Assert.assertEquals("Check that all properties were loaded", 6, propertyRepository.size());
+            Assert.assertEquals("Check that all properties were loaded", 10, propertyRepository.size());
 
             PropertyDescription dbPath = propertyRepository.get("DB_PATH");
             Assert.assertEquals("Check name of parametrized property", "DB_PATH", dbPath.getName());

@@ -24,4 +24,21 @@ public class SharedTestCommands {
 
         return propertyRepository;
     }
+
+    public static PropertyRepository createTestPropertyRepositoryWithLongNames() {
+        PropertyRepository propertyRepository = new PropertyRepository();
+
+        propertyRepository.registerProperty(PropertyDescription.createKeyValueRequiredProperty("I_DONT_KNOW_WHY_WE_SAY_ABOUT_DB_PATH", "Path to database"));
+        propertyRepository.registerProperty(PropertyDescription.createKeyValueRequiredProperty("CAN_YOU_SEE_THIS_DB_USER", "Database user"));
+        propertyRepository.registerProperty(PropertyDescription.createParameterlessProperty("DELAYED_ON_SEVEN_MINUTES",
+                "Program will show main window not right away after run, but in a minute (suitable for use with autorun, so as not to annoy the user with the appearance of the program even before the operating system is fully loaded)"));
+        propertyRepository.registerProperty(new PropertyDescription("DEBUG_OR_NOT_DEBUG", "Is debug mode enabled", null,
+                PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, true, PropertyDescription.ParamType.BOOLEAN));
+        propertyRepository.registerProperty(new PropertyDescription("TTL_PPL_ZZB_MGG", "Server timeout (in millis)", null,
+                PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDescription.ParamType.INTEGER));
+        propertyRepository.registerProperty(new PropertyDescription("DNskfjsadkfasjdflsafj", "I don't know what property it must be", null,
+                PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDescription.ParamType.FLOAT));
+
+        return propertyRepository;
+    }
 }
