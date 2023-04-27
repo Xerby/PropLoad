@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 public class PropertyLoaderTest {
@@ -202,9 +203,8 @@ public class PropertyLoaderTest {
 //        environmentVariables.set("test_for_prefix.INSANE", "Opa"); //we don't set this property to check that we don't load it
 
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
-        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
         propertyLoader.setThrowExceptionIfUnknownEnvPropertyFound(false);
-        propertyLoader.loadFromEnvironment();
+        propertyLoader.loadFromEnvironment("test_for_prefix.");
         Assert.assertEquals("Check that we we have only 5 properties",
                 5, propertyLoader.getProperties().size());
         Assert.assertEquals("Check string property",
@@ -236,10 +236,9 @@ public class PropertyLoaderTest {
 //        environmentVariables.set("test_for_prefix.INSANE", "Opa");
 
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
-        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
 //        propertyLoader.setThrowExceptionIfUnknownEnvPropertyFound(true) - by default
         try {
-            propertyLoader.loadFromEnvironment();
+            propertyLoader.loadFromEnvironment("test_for_prefix.");
         } catch (RuntimeException e) {
             Assert.assertTrue("Check that if environment prefix is set and setThrowExceptionIfUnknownEnvPropertyFound is true (by default) +" +
                             "redundant property cause exception with words \"unknown property\" and property name and prefix",
@@ -256,9 +255,8 @@ public class PropertyLoaderTest {
         environmentVariables.set("test_for_prefix.TTL", "5g");
 
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
-        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
         try {
-            propertyLoader.loadFromEnvironment();
+            propertyLoader.loadFromEnvironment("test_for_prefix.");
         } catch (NumberFormatException e) {
             Assert.assertEquals("For input string: \"5g\"", e.getMessage());
         }
@@ -274,9 +272,8 @@ public class PropertyLoaderTest {
         environmentVariables.set("test_for_prefix.DEBUG", "5");
 
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
-        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
         try {
-            propertyLoader.loadFromEnvironment();
+            propertyLoader.loadFromEnvironment("test_for_prefix.");
         } catch (Exception e) {
             Assert.assertEquals("Unknown boolean value 5 for property DEBUG", e.getMessage());
         }
@@ -290,9 +287,8 @@ public class PropertyLoaderTest {
         environmentVariables.set("test_for_prefix.TTL", "5,55");
 
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
-        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
         try {
-            propertyLoader.loadFromEnvironment();
+            propertyLoader.loadFromEnvironment("test_for_prefix.");
         } catch (NumberFormatException e) {
             Assert.assertEquals("For input string: \"5,55\"", e.getMessage());
         }
@@ -305,16 +301,15 @@ public class PropertyLoaderTest {
         environmentVariables.set("test_for_prefix.DELAYED", "Egor");
 
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
-        propertyLoader.setEnvPropertyPrefix("test_for_prefix.");
         try {
-            propertyLoader.loadFromEnvironment();
+            propertyLoader.loadFromEnvironment("test_for_prefix.");
         } catch (IllegalArgumentException e) {
             Assert.assertEquals("Property DELAYED is not parametrized, but it's value is Egor", e.getMessage());
         }
     }
 
     @Test
-    public void loadFromPropertiesFromFile() throws URISyntaxException {
+    public void loadFromPropertiesFromResourceFileTest() throws URISyntaxException {
         PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
 
@@ -330,5 +325,76 @@ public class PropertyLoaderTest {
         Assert.assertEquals(3.1415, Double.parseDouble(propertyLoader.getProperties().get("DN")), 0.1);
         Assert.assertNull(propertyLoader.getProperties().get("REDUNDANT"));
         Assert.assertNull(propertyLoader.getProperties().get("INSANE"));
+    }
+
+    @Test
+    public void loadFromOuterFileTest() throws IOException {
+        File temp = SharedTestCommands.generateTempPropertyFile();
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+
+        propertyLoader.loadFromFile(temp);
+
+        Assert.assertEquals(5, propertyLoader.getProperties().size());
+    }
+
+    @Test
+    public void setDefaultsTest() {
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+
+        Assert.assertEquals("Check properties count after creation", 0, propertyLoader.getProperties().size());
+
+        String[] cmdArgs = new String[]{"--DEBUG", "false", "--DB_USER", "User", "--DB_PATH", "C:\\test.txt", "--DB_PASSWORD", "123456"};
+        propertyLoader.loadFromCmdArgs(cmdArgs);
+        Assert.assertEquals("Check properties count after loading", 4, propertyLoader.getProperties().size());
+        Assert.assertNull("Make sure that there's no property with name DelayTime", propertyLoader.getProperties().get("DelayTime"));
+        Assert.assertNull("Make sure that there's no property with name TTL", propertyLoader.getProperties().get("TTL"));
+
+        propertyLoader.setDefaultIfIsNotSet();
+        Assert.assertEquals("Check properties count after settings defaults", 7, propertyLoader.getProperties().size());
+        Assert.assertEquals("me", propertyLoader.getProperties().get("main_username"));
+        Assert.assertEquals("Check DelayTime value", "60s", propertyLoader.getProperties().get("DelayTime"));
+        Assert.assertEquals("Check TTL value", 3000, Integer.parseInt(propertyLoader.getProperties().get("TTL")));
+    }
+
+    @Test
+    public void comprehensiveLoadTest() {
+        File temp = SharedTestCommands.generateTempPropertyFile();
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+
+        String[] cmdArgs = new String[]{"--DEBUG", "false", "--DB_USER", "User", "--SERVER_URL", "xerby.ru", "--DB_PATH", "/opt/server/db"};
+        environmentVariables.set("test_for_prefix.DEBUG", "true");
+        environmentVariables.set("test_for_prefix.DB_USER", "Admin");
+        environmentVariables.set("test_for_prefix.SERVER_URL", "Localhost");
+        environmentVariables.set("test_for_prefix.SCHEDULED", "");
+        environmentVariables.set("test_for_prefix.CITY", "London");
+
+        propertyLoader.buildProperties(cmdArgs, temp.getPath(), "test_for_prefix.", null);
+
+        Assert.assertEquals("Check properties count after loading", 11, propertyLoader.getProperties().size());
+
+        //properties from cmd
+        Assert.assertFalse(Boolean.parseBoolean(propertyLoader.getProperties().get("DEBUG")));
+        Assert.assertEquals("User", propertyLoader.getProperties().get("DB_USER"));
+        Assert.assertEquals("xerby.ru", propertyLoader.getProperties().get("SERVER_URL"));
+        Assert.assertEquals("/opt/server/db", propertyLoader.getProperties().get("DB_PATH"));
+
+        //properties from outer properties file
+        Assert.assertEquals("Aeons", propertyLoader.getProperties().get("DelayTime"));
+        Assert.assertEquals(1000, Integer.parseInt(propertyLoader.getProperties().get("TTL")));
+        Assert.assertEquals(2.86, Double.parseDouble(propertyLoader.getProperties().get("DN")), 0.1);
+
+
+        //properties from environment
+        Assert.assertTrue(propertyLoader.getProperties().containsKey("SCHEDULED"));
+        Assert.assertEquals("London", propertyLoader.getProperties().get("CITY"));
+
+        //properties from inner properties file
+        Assert.assertTrue(propertyLoader.getProperties().containsKey("DELAYED"));
+
+        //properties from default
+        Assert.assertEquals("me", propertyLoader.getProperties().get("main_username"));
     }
 }

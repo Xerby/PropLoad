@@ -30,10 +30,10 @@ public class PropertyYamlTest {
             propertyRepository.clear();
 
             propertyRepository = PropertyRepository.loadFromYamlFile(file);
-            Assert.assertEquals("Check that all properties were loaded", 10, propertyRepository.size());
+            Assert.assertEquals("Check that all properties were loaded", 12, propertyRepository.size());
 
             PropertyDescription dbPath = propertyRepository.get("DB_PATH");
-            Assert.assertEquals("Check name of parametrized property", "DB_PATH", dbPath.getName());
+            Assert.assertTrue("Check name of parametrized property", dbPath.getName().equalsIgnoreCase("DB_PATH"));
             Assert.assertEquals("Check property description", "Path to database", dbPath.getDescription());
             Assert.assertEquals("Property which was created by createKeyValueRequiredProperty must have parameter",
                     PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
@@ -42,7 +42,7 @@ public class PropertyYamlTest {
             Assert.assertTrue("Property which was created by createKeyValueRequiredProperty must be required", dbPath.isRequired());
 
             dbPath = propertyRepository.get("DELAYED");
-            Assert.assertEquals("Check name of parameterless property", "DELAYED", dbPath.getName());
+            Assert.assertTrue("Check name of parameterless property", dbPath.getName().equalsIgnoreCase("DELAYED"));
             Assert.assertEquals("Property which was created by createParameterlessProperty must not have parameter",
                     PropertyDescription.ParametrizationDegree.PARAMETER_PROHIBITED, dbPath.getParametrization());
             Assert.assertNull("When property is parameterless, its paramType must be null", dbPath.getParamType());
@@ -73,7 +73,7 @@ public class PropertyYamlTest {
         mapper.writeValue(writer, propertyRepository);
         String yamlContent = writer.toString();
         yamlContent = yamlContent.replaceAll("\\s\\sname:.*?\\n", "");
-        Assert.assertFalse("Yaml must not contain property names", yamlContent.contains("name:"));
+        Assert.assertFalse("Yaml must not contain property names", yamlContent.contains(" name:"));
 
         try (PrintWriter printWriter = new PrintWriter(file)) {
             printWriter.print(yamlContent);
@@ -83,10 +83,10 @@ public class PropertyYamlTest {
             propertyRepository.clear();
 
             propertyRepository = PropertyRepository.loadFromYamlFile(file);
-            Assert.assertEquals("Check that all properties were loaded", 10, propertyRepository.size());
+            Assert.assertEquals("Check that all properties were loaded", 12, propertyRepository.size());
 
             PropertyDescription dbPath = propertyRepository.get("DB_PATH");
-            Assert.assertEquals("Check name of parametrized property", "DB_PATH", dbPath.getName());
+            Assert.assertTrue("Check name of parametrized property", dbPath.getName().equalsIgnoreCase("DB_PATH"));
             Assert.assertEquals("Check property description", "Path to database", dbPath.getDescription());
             Assert.assertEquals("Property which was created by createKeyValueRequiredProperty must have parameter",
                     PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
@@ -95,7 +95,7 @@ public class PropertyYamlTest {
             Assert.assertTrue("Property which was created by createKeyValueRequiredProperty must be required", dbPath.isRequired());
 
             dbPath = propertyRepository.get("DELAYED");
-            Assert.assertEquals("Check name of parameterless property", "DELAYED", dbPath.getName());
+            Assert.assertTrue("Check name of parameterless property", dbPath.getName().equalsIgnoreCase("DELAYED"));
         } finally {
             //noinspection ResultOfMethodCallIgnored
             file.delete();

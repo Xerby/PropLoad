@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import java.io.File;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -13,6 +15,7 @@ import java.util.Properties;
 @Data
 public class PropertyLoader {
 
+    private static final String DEFAULT_INNER_PROPERTY_FILE_NAME = "properties.properties";
     @Getter(AccessLevel.NONE)
     private final PropertyRepository propertyRepository;
     private final Map<Object, String> properties = new HashMap<>();
@@ -22,7 +25,6 @@ public class PropertyLoader {
     private boolean isParametrizedWithoutEqualSignAllowed = true;
     private boolean throwExceptionIfUnknownCmdPropertyFound = true;
 
-    private String envPropertyPrefix = null;
     private boolean throwExceptionIfUnknownEnvPropertyFound = true; //works only if envPropertyPrefix is set
 
     private boolean throwExceptionIfUnknownPropFilePropertyFound = false;
@@ -50,6 +52,10 @@ public class PropertyLoader {
     }
 
     public void loadFromEnvironment() {
+        loadFromEnvironment(null);
+    }
+
+    public void loadFromEnvironment(String envPropertyPrefix) {
         loadFromProperties(System.getenv(), envPropertyPrefix, throwExceptionIfUnknownEnvPropertyFound && envPropertyPrefix != null && !envPropertyPrefix.isEmpty());
     }
 
@@ -58,6 +64,20 @@ public class PropertyLoader {
         Properties loadedProperties = new Properties();
         loadedProperties.load(file.toURI().toURL().openStream());
         loadFromProperties(loadedProperties, null, throwExceptionIfUnknownPropFilePropertyFound);
+    }
+
+    private boolean isContainKey(String key) {
+        if (caseSensitive)
+            return properties.containsKey(key);
+        else
+            return properties.keySet().stream().anyMatch(k -> k.toString().equalsIgnoreCase(key));
+    }
+
+    private boolean isContainKey(PropertyRepository.PossiblyCaseInsensitiveString key) {
+        if (caseSensitive)
+            return properties.containsKey(key);
+        else
+            return properties.keySet().stream().anyMatch(k -> k.toString().equalsIgnoreCase(key.getValue()));
     }
 
     protected void loadFromProperties(Map<?, ?> externalProperties, String prefix, boolean throwExceptionIfUnknownPropertyFound) {
@@ -75,7 +95,7 @@ public class PropertyLoader {
             else
                 propName = fullPropName.substring(prefix.length());
 
-            if (properties.containsKey(propName))
+            if (isContainKey(propName))
                 continue;
 
             PropertyDescription propertyDescription = propertyRepository.get(propName);
@@ -96,6 +116,50 @@ public class PropertyLoader {
             properties.put(propName, propValue);
         }
     }
+
+    public void setDefaultIfIsNotSet() {
+        for (PropertyRepository.PossiblyCaseInsensitiveString propName : propertyRepository.keySet()) {
+            if (isContainKey(propName))
+                continue;
+
+            PropertyDescription propertyDescription = propertyRepository.get(propName);
+            if (propertyDescription.getDefaultValue() == null && propertyDescription.isRequired())
+                throw new IllegalArgumentException("Property " + propName + " is required, but it's not set");
+            else if (propertyDescription.getDefaultValue() != null)
+                properties.put(propName.getValue(), propertyDescription.getDefaultValue());
+        }
+    }
+
+    public void buildProperties(String[] commandLineArgs,
+                                String outerFilePath,
+                                String envPropertyPrefix,
+                                String resourceName) {
+        loadFromCmdArgs(commandLineArgs);
+
+        if (outerFilePath != null)
+            loadFromFile(Paths.get(outerFilePath).toFile());
+
+        loadFromEnvironment(envPropertyPrefix);
+
+        URL url;
+        if (resourceName != null) {
+            url = getClass().getClassLoader().getResource(resourceName);
+            if (url == null)
+                throw new IllegalArgumentException("Resource " + resourceName + " not found");
+            File file = new File(url.getFile());
+            if (file.exists())
+                loadFromFile(file);
+            else
+                throw new IllegalArgumentException("Resource " + resourceName + " not found");
+        } else {
+            url = getClass().getClassLoader().getResource(DEFAULT_INNER_PROPERTY_FILE_NAME);
+            if (url != null)
+                loadFromFile(new File(url.getFile()));
+        }
+
+        setDefaultIfIsNotSet();
+    }
+
 
     @SuppressWarnings({"ResultOfMethodCallIgnored", "java:S2201"})
     protected void checkValueType(String propName, String propValue, PropertyDescription.ParamType paramType) {
