@@ -127,6 +127,7 @@ public class PropertyLoaderTest {
                 , RuntimeException.class, () -> propertyLoader.loadFromCmdArgs(cmdArgs));
         try {
             propertyLoader.loadFromCmdArgs(cmdArgs);
+            Assert.fail();
         } catch (RuntimeException e) {
             Assert.assertTrue("Check that if ignoring redundant properties disabled, redundant property cause exception with words \"unknown property\" and property name"
                     , e.getMessage().toLowerCase().contains("unknown property") && e.getMessage().contains("DB_UNER"));
@@ -239,6 +240,8 @@ public class PropertyLoaderTest {
 //        propertyLoader.setThrowExceptionIfUnknownEnvPropertyFound(true) - by default
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
+            Assert.fail("Check that if environment prefix is set and setThrowExceptionIfUnknownEnvPropertyFound is true (by default) +" +
+                    "redundant property cause exception");
         } catch (RuntimeException e) {
             Assert.assertTrue("Check that if environment prefix is set and setThrowExceptionIfUnknownEnvPropertyFound is true (by default) +" +
                             "redundant property cause exception with words \"unknown property\" and property name and prefix",
@@ -257,6 +260,7 @@ public class PropertyLoaderTest {
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
+            Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
         } catch (NumberFormatException e) {
             Assert.assertEquals("For input string: \"5g\"", e.getMessage());
         }
@@ -274,6 +278,7 @@ public class PropertyLoaderTest {
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
+            Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
         } catch (Exception e) {
             Assert.assertEquals("Unknown boolean value 5 for property DEBUG", e.getMessage());
         }
@@ -289,6 +294,7 @@ public class PropertyLoaderTest {
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
+            Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
         } catch (NumberFormatException e) {
             Assert.assertEquals("For input string: \"5,55\"", e.getMessage());
         }
@@ -303,6 +309,7 @@ public class PropertyLoaderTest {
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
+            Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
         } catch (IllegalArgumentException e) {
             Assert.assertEquals("Property DELAYED is not parametrized, but it's value is Egor", e.getMessage());
         }
@@ -364,31 +371,31 @@ public class PropertyLoaderTest {
         PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
         PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
 
-        String[] cmdArgs = new String[]{"--DEBUG", "false", "--DB_USER", "User", "--SERVER_URL", "xerby.ru", "--DB_PATH", "/opt/server/db"};
+        String[] cmdArgs = new String[]{"--DEBUG", "false", "--DB_USER", "User", "--DB_path", "/opt/server/db", "--SERVER_URL", "xerby.ru"};
         environmentVariables.set("test_for_prefix.DEBUG", "true");
         environmentVariables.set("test_for_prefix.DB_USER", "Admin");
         environmentVariables.set("test_for_prefix.SERVER_URL", "Localhost");
-        environmentVariables.set("test_for_prefix.SCHEDULED", "");
+        environmentVariables.set("test_for_prefix.scheduled", "");
         environmentVariables.set("test_for_prefix.CITY", "London");
 
-        propertyLoader.buildProperties(cmdArgs, temp.getPath(), "test_for_prefix.", null);
+        propertyLoader.buildProperties(cmdArgs, temp.getPath(), "test_for_prefix.", "properties.properties");
 
         Assert.assertEquals("Check properties count after loading", 11, propertyLoader.getProperties().size());
 
         //properties from cmd
         Assert.assertFalse(Boolean.parseBoolean(propertyLoader.getProperties().get("DEBUG")));
-        Assert.assertEquals("User", propertyLoader.getProperties().get("DB_USER"));
+        Assert.assertEquals("User", propertyLoader.getProperties().get("db_user"));
         Assert.assertEquals("xerby.ru", propertyLoader.getProperties().get("SERVER_URL"));
-        Assert.assertEquals("/opt/server/db", propertyLoader.getProperties().get("DB_PATH"));
+        Assert.assertEquals("/opt/server/db", propertyLoader.getProperties().get("Db_PATH"));
 
         //properties from outer properties file
         Assert.assertEquals("Aeons", propertyLoader.getProperties().get("DelayTime"));
-        Assert.assertEquals(1000, Integer.parseInt(propertyLoader.getProperties().get("TTL")));
+        Assert.assertEquals(1000, Integer.parseInt(propertyLoader.getProperties().get("Ttl")));
         Assert.assertEquals(2.86, Double.parseDouble(propertyLoader.getProperties().get("DN")), 0.1);
 
 
         //properties from environment
-        Assert.assertTrue(propertyLoader.getProperties().containsKey("SCHEDULED"));
+        Assert.assertTrue(propertyLoader.getProperties().containsKey("Scheduled"));
         Assert.assertEquals("London", propertyLoader.getProperties().get("CITY"));
 
         //properties from inner properties file
@@ -396,5 +403,62 @@ public class PropertyLoaderTest {
 
         //properties from default
         Assert.assertEquals("me", propertyLoader.getProperties().get("main_username"));
+    }
+
+    @Test
+    public void notAllRequiredPropertiesWereDefinedTest() {
+        String temp = SharedTestCommands.generateTempPropertyFile().getPath();
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+
+        String[] cmdArgs = new String[]{"--DEBUG", "false", "--DB_USER", "User", "--SERVER_URL", "xerby.ru"};
+        environmentVariables.set("test_for_prefix.DEBUG", "true");
+        environmentVariables.set("test_for_prefix.DB_USER", "Admin");
+        environmentVariables.set("test_for_prefix.SERVER_URL", "Localhost");
+        environmentVariables.set("test_for_prefix.SCHEDULED", "");
+        environmentVariables.set("test_for_prefix.CITY", "London");
+
+        try {
+            propertyLoader.buildProperties(cmdArgs, temp, "test_for_prefix.", null);
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("property db_path is required, but it's not set", e.getMessage().toLowerCase());
+        }
+    }
+
+    @Test
+    public void caseSensitiveLoadTest() {
+        String temp = SharedTestCommands.generateTempPropertyFile().getPath();
+        PropertyRepository propertyRepository = SharedTestCommands.createCaseSensetiveTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+
+        String[] cmdArgs = new String[]{"--DB_USER", "User", "--DB_path", "/opt/server/db"};
+        environmentVariables.set("test_for_prefix.DB_Path", "Admin");
+        environmentVariables.set("test_for_prefix.SERVER_URL", "Localhost");
+        environmentVariables.set("test_for_prefix.scheduled", "");
+
+        try {
+            propertyLoader.buildProperties(cmdArgs, temp, "test_for_prefix.", null);
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("unknown property \"db_user\" was found in command line arguments", e.getMessage().toLowerCase());
+        }
+
+        cmdArgs = new String[]{"--DB_user", "User", "--DB_PATH", "/opt/server/db"};
+        try {
+            propertyLoader.buildProperties(cmdArgs, temp, "test_for_prefix.", null);
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("unknown property \"db_path\" was found in environment (prefix \"test_for_prefix.\")", e.getMessage().toLowerCase());
+        }
+
+        environmentVariables.clear("test_for_prefix.DB_Path", "test_for_prefix.SERVER_URL", "test_for_prefix.scheduled");
+        environmentVariables.set("test_for_prefix.ttl", "31337");
+
+        propertyLoader.buildProperties(cmdArgs, temp, "test_for_prefix.", null);
+        Assert.assertEquals(3, propertyLoader.getProperties().size());
+
+        Assert.assertNull(propertyLoader.getProperties().get("Ttl"));
+        Assert.assertEquals(31337, Integer.parseInt(propertyLoader.getProperties().get("ttl")));
     }
 }

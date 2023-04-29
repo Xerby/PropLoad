@@ -8,9 +8,9 @@ import lombok.SneakyThrows;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 @Data
 public class PropertyLoader {
@@ -18,7 +18,7 @@ public class PropertyLoader {
     private static final String DEFAULT_INNER_PROPERTY_FILE_NAME = "properties.properties";
     @Getter(AccessLevel.NONE)
     private final PropertyRepository propertyRepository;
-    private final Map<Object, String> properties = new HashMap<>();
+    private final Map<String, String> properties;
 
     private boolean isEnabledWindowsKeyCompatibility = false;
     private boolean throwExceptionIfUnboundTokenFound = true;
@@ -31,13 +31,19 @@ public class PropertyLoader {
 
     private boolean caseSensitive = false;
 
+    public PropertyLoader(PropertyRepository propertyRepository) {
+        this.propertyRepository = propertyRepository;
+        caseSensitive = propertyRepository.caseSensitive;
+        this.properties = new TreeMap<>(caseSensitive ? String::compareTo : String::compareToIgnoreCase);
+    }
+
     public void loadFromCmdArgs(String[] args) {
         ParsedCmdProperties parsedCmdProperties = ParsedCmdProperties.parse(args, isEnabledWindowsKeyCompatibility, throwExceptionIfUnboundTokenFound);
         for (ParsedCmdProperty parsedCmdProperty : parsedCmdProperties) {
             PropertyDescription propertyDescription = propertyRepository.get(parsedCmdProperty.getKey());
             if (propertyDescription == null)
                 if (throwExceptionIfUnknownCmdPropertyFound)
-                    throw new IllegalArgumentException("Unknown property " + parsedCmdProperty.getKey() + " was found in command line arguments");
+                    throw new IllegalArgumentException("Unknown property \"" + parsedCmdProperty.getKey() + "\" was found in command line arguments");
                 else
                     continue;
 
@@ -66,20 +72,6 @@ public class PropertyLoader {
         loadFromProperties(loadedProperties, null, throwExceptionIfUnknownPropFilePropertyFound);
     }
 
-    private boolean isContainKey(String key) {
-        if (caseSensitive)
-            return properties.containsKey(key);
-        else
-            return properties.keySet().stream().anyMatch(k -> k.toString().equalsIgnoreCase(key));
-    }
-
-    private boolean isContainKey(PropertyRepository.PossiblyCaseInsensitiveString key) {
-        if (caseSensitive)
-            return properties.containsKey(key);
-        else
-            return properties.keySet().stream().anyMatch(k -> k.toString().equalsIgnoreCase(key.getValue()));
-    }
-
     protected void loadFromProperties(Map<?, ?> externalProperties, String prefix, boolean throwExceptionIfUnknownPropertyFound) {
         if (externalProperties == null)
             return;
@@ -95,7 +87,7 @@ public class PropertyLoader {
             else
                 propName = fullPropName.substring(prefix.length());
 
-            if (isContainKey(propName))
+            if (properties.containsKey(propName))
                 continue;
 
             PropertyDescription propertyDescription = propertyRepository.get(propName);
@@ -118,15 +110,15 @@ public class PropertyLoader {
     }
 
     public void setDefaultIfIsNotSet() {
-        for (PropertyRepository.PossiblyCaseInsensitiveString propName : propertyRepository.keySet()) {
-            if (isContainKey(propName))
+        for (String propName : propertyRepository.keySet()) {
+            if (properties.containsKey(propName))
                 continue;
 
             PropertyDescription propertyDescription = propertyRepository.get(propName);
             if (propertyDescription.getDefaultValue() == null && propertyDescription.isRequired())
                 throw new IllegalArgumentException("Property " + propName + " is required, but it's not set");
             else if (propertyDescription.getDefaultValue() != null)
-                properties.put(propName.getValue(), propertyDescription.getDefaultValue());
+                properties.put(propName, propertyDescription.getDefaultValue());
         }
     }
 
@@ -134,6 +126,7 @@ public class PropertyLoader {
                                 String outerFilePath,
                                 String envPropertyPrefix,
                                 String resourceName) {
+        properties.clear();
         loadFromCmdArgs(commandLineArgs);
 
         if (outerFilePath != null)
@@ -159,7 +152,6 @@ public class PropertyLoader {
 
         setDefaultIfIsNotSet();
     }
-
 
     @SuppressWarnings({"ResultOfMethodCallIgnored", "java:S2201"})
     protected void checkValueType(String propName, String propValue, PropertyDescription.ParamType paramType) {

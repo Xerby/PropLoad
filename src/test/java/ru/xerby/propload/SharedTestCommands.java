@@ -35,6 +35,21 @@ public class SharedTestCommands {
         return propertyRepository;
     }
 
+
+    public static PropertyRepository createCaseSensetiveTestPropertyRepository() {
+        PropertyRepository propertyRepository = new PropertyRepository(true);
+
+        propertyRepository.registerProperty(PropertyDescription.createKeyValueRequiredProperty("DB_PATH", "Path to database"));
+        propertyRepository.registerProperty(PropertyDescription.createKeyValueRequiredProperty("DB_user", "Database user"));
+        propertyRepository.registerProperty(new PropertyDescription("ttl", "Server timeout (in millis)", "3000",
+                PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDescription.ParamType.INTEGER));
+        propertyRepository.registerProperty(new PropertyDescription("Dn", "I don't know what property it must be", null,
+                PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDescription.ParamType.FLOAT));
+
+        return propertyRepository;
+    }
+
+
     public static PropertyRepository createTestPropertyRepositoryWithLongNames() {
         PropertyRepository propertyRepository = new PropertyRepository();
 
@@ -59,7 +74,7 @@ public class SharedTestCommands {
         properties.setProperty("SERVER_URL", "https://google.com");
         properties.setProperty("TTL", "1000");
         properties.setProperty("DelayTime", "Aeons");
-        properties.setProperty("DN", "2.86");
+        properties.setProperty("dn", "2.86");
         properties.setProperty("REDUNDANT", "12");
 
         File temp = Files.createTempFile("temp", ".properties").toFile();
