@@ -6,10 +6,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.file.Paths;
 
 public class PropertyYamlTest {
@@ -82,7 +79,9 @@ public class PropertyYamlTest {
         try {
             propertyRepository.clear();
 
-            propertyRepository = PropertyRepository.loadFromYamlFile(file);
+            try (InputStream inputStream = new FileInputStream(file)) {
+                propertyRepository = PropertyRepository.loadFromInputStream(inputStream);
+            }
             Assert.assertEquals("Check that all properties were loaded", 12, propertyRepository.size());
 
             PropertyDescription dbPath = propertyRepository.get("DB_PATH");
