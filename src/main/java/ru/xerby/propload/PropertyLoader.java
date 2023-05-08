@@ -169,17 +169,27 @@ public class PropertyLoader {
                 Integer.parseInt(propValue);
                 break;
             case BOOLEAN:
-                String token = propValue.strip().toLowerCase();
-                if (!token.equals("true") && !token.equals("false") && !token.equals("t") && !token.equals("f")
-                        && !token.equals("yes") && !token.equals("no") && !token.equals("y") && !token.equals("n")
-                        && !token.equals("0") && !token.equals("1") && !token.equals("-1"))
-                    throw new IllegalArgumentException("Unknown boolean value " + propValue + " for property " + propName);
+                getAsBoolean(propValue, propName);
                 break;
             case FLOAT:
                 Double.parseDouble(propValue);
                 break;
 //            default:
 //                throw new IllegalArgumentException("Unknown param type " + paramType + " for property " + propName);
+        }
+    }
+
+    public boolean getAsBoolean(String propValue, String key) {
+        if (propValue == null)
+            return false;
+        else {
+            String value = propValue.strip().toLowerCase();
+            if (value.equals("true") || value.equals("t") || value.equals("yes") || value.equals("1") || value.equals("y"))
+                return true;
+            else if (value.equals("false") || value.equals("f") || value.equals("no") || value.equals("0") || value.equals("n"))
+                return false;
+            else
+                throw new IllegalArgumentException("Unknown boolean value " + value + " for property " + key);
         }
     }
 }
