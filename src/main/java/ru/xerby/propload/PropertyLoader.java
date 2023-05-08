@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 
 import java.io.File;
-import java.net.URL;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
@@ -72,6 +72,13 @@ public class PropertyLoader {
         loadFromProperties(loadedProperties, null, throwExceptionIfUnknownPropFilePropertyFound);
     }
 
+    @SneakyThrows
+    public void loadFromStream(InputStream stream) {
+        Properties loadedProperties = new Properties();
+        loadedProperties.load(stream);
+        loadFromProperties(loadedProperties, null, throwExceptionIfUnknownPropFilePropertyFound);
+    }
+
     protected void loadFromProperties(Map<?, ?> externalProperties, String prefix, boolean throwExceptionIfUnknownPropertyFound) {
         if (externalProperties == null)
             return;
@@ -134,20 +141,17 @@ public class PropertyLoader {
 
         loadFromEnvironment(envPropertyPrefix);
 
-        URL url;
+        InputStream resource;
         if (resourceName != null) {
-            url = getClass().getClassLoader().getResource(resourceName);
-            if (url == null)
+            resource = getClass().getClassLoader().getResourceAsStream(resourceName);
+            if (resource == null)
                 throw new IllegalArgumentException("Resource " + resourceName + " not found");
-            File file = new File(url.getFile());
-            if (file.exists())
-                loadFromFile(file);
-            else
-                throw new IllegalArgumentException("Resource " + resourceName + " not found");
+
+            loadFromStream(resource);
         } else {
-            url = getClass().getClassLoader().getResource(DEFAULT_INNER_PROPERTY_FILE_NAME);
-            if (url != null)
-                loadFromFile(new File(url.getFile()));
+            resource = getClass().getClassLoader().getResourceAsStream(DEFAULT_INNER_PROPERTY_FILE_NAME);
+            if (resource != null)
+                loadFromStream(resource);
         }
 
         setDefaultIfIsNotSet();
