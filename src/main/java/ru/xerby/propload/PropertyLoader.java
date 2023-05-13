@@ -28,6 +28,7 @@ public class PropertyLoader {
     private boolean throwExceptionIfUnknownEnvPropertyFound = true; //works only if envPropertyPrefix is set
 
     private boolean throwExceptionIfUnknownPropFilePropertyFound = false;
+    private boolean throwExceptionIfPropertyResourceNotFound = true;
 
     private boolean caseSensitive = false;
 
@@ -144,7 +145,7 @@ public class PropertyLoader {
         InputStream resource;
         if (resourceName != null) {
             resource = getClass().getClassLoader().getResourceAsStream(resourceName);
-            if (resource == null)
+            if (resource == null && throwExceptionIfPropertyResourceNotFound)
                 throw new IllegalArgumentException("Resource " + resourceName + " not found");
 
             loadFromStream(resource);
