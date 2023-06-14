@@ -147,8 +147,8 @@ public class PropertyLoader {
             resource = getClass().getClassLoader().getResourceAsStream(resourceName);
             if (resource == null && throwExceptionIfPropertyResourceNotFound)
                 throw new IllegalArgumentException("Resource " + resourceName + " not found");
-
-            loadFromStream(resource);
+            if (resource != null)
+                loadFromStream(resource);
         } else {
             resource = getClass().getClassLoader().getResourceAsStream(DEFAULT_INNER_PROPERTY_FILE_NAME);
             if (resource != null)
@@ -184,7 +184,11 @@ public class PropertyLoader {
         }
     }
 
-    public boolean getAsBoolean(String propValue, String key) {
+    public boolean getAsBoolean(String key) {
+        return getAsBoolean(properties.get(key), key);
+    }
+
+    private boolean getAsBoolean(String propValue, String keyForLogging) {
         if (propValue == null)
             return false;
         else {
@@ -194,7 +198,7 @@ public class PropertyLoader {
             else if (value.equals("false") || value.equals("f") || value.equals("no") || value.equals("0") || value.equals("n"))
                 return false;
             else
-                throw new IllegalArgumentException("Unknown boolean value " + value + " for property " + key);
+                throw new IllegalArgumentException("Unknown boolean value " + value + " for property " + keyForLogging);
         }
     }
 }
