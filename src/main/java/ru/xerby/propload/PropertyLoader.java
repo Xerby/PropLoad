@@ -128,6 +128,7 @@ public class PropertyLoader {
         try (var stream = file.toURI().toURL().openStream()) {
             loadedProperties.load(stream);
         }
+        log.debug("Loaded " + loadedProperties.size() + " properties from file " + file.getAbsolutePath());
         loadFromProperties(loadedProperties, null, throwExceptionIfUnknownPropFilePropertyFound);
     }
 
@@ -229,9 +230,11 @@ public class PropertyLoader {
             return originalExternalPropertyFilePath;
 
         if (!properties.containsKey(REDEFINED_PROPERTY_FILE_PROPERTY_NAME) && envPropertyPrefix != null) {
-            String envProp = System.getenv(envPropertyPrefix + REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
+            Map.Entry<String, String> envEntry = System.getenv().entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase(envPropertyPrefix + REDEFINED_PROPERTY_FILE_PROPERTY_NAME))
+                    .findFirst().orElse(null);
+
+            String envProp = envEntry == null ? null : envEntry.getValue();
             if (envProp != null) {
-                log.debug("Property " + envPropertyPrefix + REDEFINED_PROPERTY_FILE_PROPERTY_NAME + " was found in environment variables");
                 properties.put(REDEFINED_PROPERTY_FILE_PROPERTY_NAME, envProp);
             }
         }
