@@ -29,27 +29,27 @@ public class PropertyYamlTest {
             propertyRepository = PropertyRepository.loadFromYamlFile(file);
             Assert.assertEquals("Check that all properties were loaded", 12, propertyRepository.size());
 
-            PropertyDescription dbPath = propertyRepository.get("DB_PATH");
+            PropertyDefinition dbPath = propertyRepository.get("DB_PATH");
             Assert.assertTrue("Check name of parametrized property", dbPath.getName().equalsIgnoreCase("DB_PATH"));
             Assert.assertEquals("Check property description", "Path to database", dbPath.getDescription());
             Assert.assertEquals("Property which was created by createKeyValueRequiredProperty must have parameter",
-                    PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
+                    PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
             Assert.assertEquals("Property which was created by createKeyValueRequiredProperty must be string",
-                    PropertyDescription.ParamType.STRING, dbPath.getParamType());
+                    PropertyDefinition.ParamType.STRING, dbPath.getParamType());
             Assert.assertTrue("Property which was created by createKeyValueRequiredProperty must be required", dbPath.isRequired());
 
             dbPath = propertyRepository.get("DELAYED");
             Assert.assertTrue("Check name of parameterless property", dbPath.getName().equalsIgnoreCase("DELAYED"));
             Assert.assertEquals("Property which was created by createParameterlessProperty must not have parameter",
-                    PropertyDescription.ParametrizationDegree.PARAMETER_PROHIBITED, dbPath.getParametrization());
+                    PropertyDefinition.ParametrizationDegree.PARAMETER_PROHIBITED, dbPath.getParametrization());
             Assert.assertNull("When property is parameterless, its paramType must be null", dbPath.getParamType());
             Assert.assertFalse("Property which was created by createParameterlessProperty is not necessary", dbPath.isRequired());
 
             dbPath = propertyRepository.get("SERVER_URL");
             Assert.assertEquals("Property which was created by createKeyValueOptionalProperty must have parameter",
-                    PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
+                    PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
             Assert.assertEquals("Property which was created by createKeyValueOptionalProperty must be string",
-                    PropertyDescription.ParamType.STRING, dbPath.getParamType());
+                    PropertyDefinition.ParamType.STRING, dbPath.getParamType());
             Assert.assertFalse("Property which was created by createKeyValueOptionalProperty is not necessary", dbPath.isRequired());
         } finally {
             //noinspection ResultOfMethodCallIgnored
@@ -84,13 +84,13 @@ public class PropertyYamlTest {
             }
             Assert.assertEquals("Check that all properties were loaded", 12, propertyRepository.size());
 
-            PropertyDescription dbPath = propertyRepository.get("DB_PATH");
+            PropertyDefinition dbPath = propertyRepository.get("DB_PATH");
             Assert.assertTrue("Check name of parametrized property", dbPath.getName().equalsIgnoreCase("DB_PATH"));
             Assert.assertEquals("Check property description", "Path to database", dbPath.getDescription());
             Assert.assertEquals("Property which was created by createKeyValueRequiredProperty must have parameter",
-                    PropertyDescription.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
+                    PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
             Assert.assertEquals("Property which was created by createKeyValueRequiredProperty must be string",
-                    PropertyDescription.ParamType.STRING, dbPath.getParamType());
+                    PropertyDefinition.ParamType.STRING, dbPath.getParamType());
             Assert.assertTrue("Property which was created by createKeyValueRequiredProperty must be required", dbPath.isRequired());
 
             dbPath = propertyRepository.get("DELAYED");

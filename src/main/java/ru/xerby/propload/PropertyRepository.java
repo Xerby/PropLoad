@@ -8,8 +8,15 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.TreeMap;
 
+
+/**
+ * The class is responsible for loading and storing definitions of properties that must or may be present.
+ * Any work with properties should start with this class.
+ * Properties are case-insensitive by default, but it can be changed using a one-parameter constructor.
+ * The most straightforward way to load properties is to use the static method loadFromYamlFile.
+ */
 @SuppressWarnings("java:S2160")
-public class PropertyRepository extends TreeMap<String, PropertyDescription> {
+public class PropertyRepository extends TreeMap<String, PropertyDefinition> {
 
     public final boolean caseSensitive;
 
@@ -54,7 +61,7 @@ public class PropertyRepository extends TreeMap<String, PropertyDescription> {
         }
     }
 
-    public void registerProperty(PropertyDescription value) {
+    public void registerProperty(PropertyDefinition value) {
         this.put(value.getName(), value);
     }
 }

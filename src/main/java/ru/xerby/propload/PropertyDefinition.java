@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class PropertyDescription {
+public class PropertyDefinition {
     private final String description;
     private final String defaultValue;//can't have defaultValue and be parameterless at the same time
     private final ParametrizationDegree parametrization;
@@ -18,7 +18,7 @@ public class PropertyDescription {
     private final String[] cmdAliases;
     private String name;
 
-    public PropertyDescription(
+    public PropertyDefinition(
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("default_Value") String defaultValue,
@@ -37,20 +37,20 @@ public class PropertyDescription {
     }
 
 
-    public PropertyDescription(String name, String description, String defaultValue, ParametrizationDegree parametrized, boolean isRequired, ParamType paramType) {
+    public PropertyDefinition(String name, String description, String defaultValue, ParametrizationDegree parametrized, boolean isRequired, ParamType paramType) {
         this(name, description, defaultValue, parametrized, isRequired, paramType, null);
     }
 
-    public static PropertyDescription createParameterlessProperty(String name, String description) {
-        return new PropertyDescription(name, description, null, ParametrizationDegree.PARAMETER_PROHIBITED, false, null);
+    public static PropertyDefinition createParameterlessProperty(String name, String description) {
+        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_PROHIBITED, false, null);
     }
 
-    public static PropertyDescription createKeyValueRequiredProperty(String name, String description) {
-        return new PropertyDescription(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, true, ParamType.STRING);
+    public static PropertyDefinition createKeyValueRequiredProperty(String name, String description) {
+        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, true, ParamType.STRING);
     }
 
-    public static PropertyDescription createKeyValueOptionalProperty(String name, String description) {
-        return new PropertyDescription(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, false, ParamType.STRING);
+    public static PropertyDefinition createKeyValueOptionalProperty(String name, String description) {
+        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, false, ParamType.STRING);
     }
 
     protected void validate() {
@@ -68,12 +68,18 @@ public class PropertyDescription {
         this.name = name;
     }
 
-    //If PARAMETER_PROHIBITED, then you can't use property with parameter. If parameter will be used, then exception will be thrown.
-    //If ONLY_EQUAL_SIGN_PARAMETER, then pair "key=value" will be treated as a parametrized key, but if you will use "key value",
-    // "key" will be treated as a key without parameter and "value" will be ignored and be returned as remainder part.
-    //If PARAMETER_OPTIONAL then either "key=value" or "key value" will be treated as a parametrized key, but you also can use "key" without parameter.
-    //If PARAMETER_REQUIRED then if you don't use parameter, then exception will be thrown.
+    /**
+     * Can or should a property have a parameter and how should it be designated
+     * <p>If PARAMETER_PROHIBITED, then you can't use property with parameter. If parameter will be used, then exception will be thrown.
+     * If ONLY_EQUAL_SIGN_PARAMETER, then pair "key=value" will be treated as a parametrized key, but if you will use "key value",
+     * "key" will be treated as a key without parameter and "value" will be ignored and be returned as remainder part.
+     * If PARAMETER_OPTIONAL then either "key=value" or "key value" will be treated as a parametrized key, but you also can use "key" without parameter.
+     * If PARAMETER_REQUIRED then if you don't use parameter, then exception will be thrown.
+     */
     public enum ParametrizationDegree {PARAMETER_PROHIBITED, ONLY_EQUALS_SIGN_PARAMETER, PARAMETER_OPTIONAL, PARAMETER_REQUIRED}
 
+    /**
+     * What type of parameter can be used with a property. STRING by default
+     */
     public enum ParamType {BOOLEAN, STRING, INTEGER, FLOAT}
 }

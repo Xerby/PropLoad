@@ -10,7 +10,7 @@ import java.util.List;
 
 @Slf4j
 @EqualsAndHashCode
-public class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
+class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
     private final List<ParsedCmdProperty> properties = new ArrayList<>();
 
     @SuppressWarnings("java:S3776")

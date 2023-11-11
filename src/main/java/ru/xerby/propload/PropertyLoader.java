@@ -1,9 +1,6 @@
 package ru.xerby.propload;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.SneakyThrows;
+import lombok.*;
 
 import java.io.File;
 import java.io.InputStream;
@@ -12,6 +9,21 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+/**
+ * This class is responsible for loading properties from different sources. Properties that should or can be loaded
+ * are listed in the {@link PropertyRepository}; if the property is not in the repository, then it will not be loaded,
+ * even if it is present in one of the sources.
+ * <p>If the same property is present in different sources, then preference is given to higher priority sources.
+ * The command line has maximum priority, then the external settings file, then the environment and then
+ * the internal resource file. If the property is not found in any of the sources, but it has a default value,
+ * then it is entered.
+ * <p>By default, the user can specify an external settings file by specifying the path to it on the command line
+ * (property-file property) or in environment variables, if a prefix is specified for environment variables.
+ * <p>The class also has many settings that allow you to process sources differently and validate them with varying degrees of strictness.
+ * Is it possible to specify parameterized properties without an equal sign, is it possible to specify properties in the Windows way,
+ * will an exception throw if an unknown command line parameter is encountered. The only parameter that is not set in this class is case sensitivity.
+ * It must be specified in {@link PropertyRepository}.
+ */
 @Data
 public class PropertyLoader {
 
@@ -21,18 +33,58 @@ public class PropertyLoader {
     private final PropertyRepository propertyRepository;
     private final Map<String, String> properties;
 
+    /**
+     * If true, then the user can specify an external settings file by specifying the path to it on the command line (key: property-file) or in environment variables.
+     * True by default.
+     */
     private boolean canRedefineExternalPropertyFile = true;
+
+    /**
+     * If true, then the user can specify properties in the Windows way: /key value or /key=value. False by default.
+     */
     private boolean isEnabledWindowsKeyCompatibility = false;
+
+    /**
+     * If true, then an exception will be thrown if a value is found that does not belong to any property.  If false, then such values will be ignored.
+     * For example, \"-key1=value1 -key2 value2 value3 -key5\". \"value2\" will be considered as a value for \"key2\" and \"key3\" will be considered as dangling token.
+     * If true, then an exception will be thrown, if false, then \"key3\" will be ignored. True by default.
+     */
     private boolean throwExceptionIfUnboundTokenFound = true;
+
+    /**
+     * If true, then the user can specify parameterized properties without an equal sign, for example, \"-key value\".
+     * If false, then such properties must use equal sign, for example, \"-key=value\". True by default.
+     */
     private boolean isParametrizedWithoutEqualSignAllowed = true;
+
+    /**
+     * If true, then an exception will be thrown if an unknown command line parameter is encountered. If false, then such parameters will be ignored.
+     * True by default.
+     */
     private boolean throwExceptionIfUnknownCmdPropertyFound = true;
 
-    private boolean throwExceptionIfUnknownEnvPropertyFound = true; //works only if envPropertyPrefix is set
+    /**
+     * If true, then an exception will be thrown if an unknown environment variable is encountered. If false, then such variables will be ignored.
+     * The parameter is checked only if the environment variable prefix is specified, otherwise it is ignored
+     * (because there will be many unfamiliar environment variables anyway).
+     * True by default.
+     */
+    private boolean throwExceptionIfUnknownEnvPropertyFound = true;
 
+    /**
+     * If true, then an exception will be thrown if an unknown property is encountered in the external settings file.
+     * If false, then such properties will be ignored. False by default.
+     */
     private boolean throwExceptionIfUnknownPropFilePropertyFound = false;
+
+    /**
+     * If true, then an exception will be thrown if the resource file is not found. If false, then such properties will be ignored.
+     * True by default.
+     */
     private boolean throwExceptionIfPropertyResourceNotFound = true;
 
-    private boolean caseSensitive = false;
+    @Setter(AccessLevel.NONE)
+    private boolean caseSensitive;
 
     public PropertyLoader(PropertyRepository propertyRepository) {
         this.propertyRepository = propertyRepository;
@@ -43,15 +95,15 @@ public class PropertyLoader {
     public void loadFromCmdArgs(String[] args) {
         ParsedCmdProperties parsedCmdProperties = ParsedCmdProperties.parse(args, isEnabledWindowsKeyCompatibility, throwExceptionIfUnboundTokenFound);
         for (ParsedCmdProperty parsedCmdProperty : parsedCmdProperties) {
-            PropertyDescription propertyDescription = propertyRepository.get(parsedCmdProperty.getKey());
-            if (propertyDescription == null)
+            PropertyDefinition propertyDefinition = propertyRepository.get(parsedCmdProperty.getKey());
+            if (propertyDefinition == null)
                 if (throwExceptionIfUnknownCmdPropertyFound)
                     throw new IllegalArgumentException("Unknown property \"" + parsedCmdProperty.getKey() + "\" was found in command line arguments");
                 else
                     continue;
 
             if (parsedCmdProperty.isSurelyParametrized() || isParametrizedWithoutEqualSignAllowed) {
-                checkValueType(parsedCmdProperty.getKey(), parsedCmdProperty.getValue(), propertyDescription.getParamType());
+                checkValueType(parsedCmdProperty.getKey(), parsedCmdProperty.getValue(), propertyDefinition.getParamType());
                 properties.put(parsedCmdProperty.getKey(), parsedCmdProperty.getValue());
             } else if (parsedCmdProperty.getValue() == null)
                 properties.put(parsedCmdProperty.getKey(), null);
@@ -71,7 +123,9 @@ public class PropertyLoader {
     @SneakyThrows
     public void loadFromFile(File file) {
         Properties loadedProperties = new Properties();
-        loadedProperties.load(file.toURI().toURL().openStream());
+        try (var stream = file.toURI().toURL().openStream()) {
+            loadedProperties.load(stream);
+        }
         loadFromProperties(loadedProperties, null, throwExceptionIfUnknownPropFilePropertyFound);
     }
 
@@ -100,18 +154,18 @@ public class PropertyLoader {
             if (properties.containsKey(propName))
                 continue;
 
-            PropertyDescription propertyDescription = propertyRepository.get(propName);
-            if (propertyDescription == null)
+            PropertyDefinition propertyDefinition = propertyRepository.get(propName);
+            if (propertyDefinition == null)
                 if (throwExceptionIfUnknownPropertyFound)
                     throw new IllegalArgumentException("Unknown property \"" + propName + "\" was found in environment" +
                             (prefix == null ? null : " (prefix \"" + prefix + "\")"));
                 else
                     continue;
 
-            checkValueType(propName, (String) externalProperties.get(fullPropName), propertyDescription.getParamType());
+            checkValueType(propName, (String) externalProperties.get(fullPropName), propertyDefinition.getParamType());
 
             String propValue;
-            if (propertyDescription.getParamType() == null)
+            if (propertyDefinition.getParamType() == null)
                 propValue = null;
             else
                 propValue = (String) externalProperties.get(fullPropName);
@@ -124,16 +178,16 @@ public class PropertyLoader {
             if (properties.containsKey(propName))
                 continue;
 
-            PropertyDescription propertyDescription = propertyRepository.get(propName);
-            if (propertyDescription.getDefaultValue() == null && propertyDescription.isRequired())
+            PropertyDefinition propertyDefinition = propertyRepository.get(propName);
+            if (propertyDefinition.getDefaultValue() == null && propertyDefinition.isRequired())
                 throw new IllegalArgumentException("Property " + propName + " is required, but it's not set");
-            else if (propertyDescription.getDefaultValue() != null)
-                properties.put(propName, propertyDescription.getDefaultValue());
+            else if (propertyDefinition.getDefaultValue() != null)
+                properties.put(propName, propertyDefinition.getDefaultValue());
         }
     }
 
     public void buildProperties(String[] commandLineArgs,
-                                String outerFilePath,
+                                String externalPropertyFilePath,
                                 String envPropertyPrefix,
                                 String resourceName) {
         if (canRedefineExternalPropertyFile)
@@ -143,10 +197,10 @@ public class PropertyLoader {
         properties.clear();
         loadFromCmdArgs(commandLineArgs);
 
-        outerFilePath = getExternalPropertyFilePath(outerFilePath, envPropertyPrefix);
+        externalPropertyFilePath = getExternalPropertyFilePath(externalPropertyFilePath, envPropertyPrefix);
 
-        if (outerFilePath != null)
-            loadFromFile(Paths.get(outerFilePath).toFile());
+        if (externalPropertyFilePath != null)
+            loadFromFile(Paths.get(externalPropertyFilePath).toFile());
 
         loadFromEnvironment(envPropertyPrefix);
 
@@ -190,7 +244,7 @@ public class PropertyLoader {
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored", "java:S2201"})
-    protected void checkValueType(String propName, String propValue, PropertyDescription.ParamType paramType) {
+    protected void checkValueType(String propName, String propValue, PropertyDefinition.ParamType paramType) {
         if (propValue == null) return;
         if (paramType == null)
             if ((propValue.isEmpty() || propValue.equals(" ")) || propValue.equals("true") || propValue.equals("t") || propValue.equals("yes") || propValue.equals("1") || propValue.equals("y"))
@@ -210,8 +264,8 @@ public class PropertyLoader {
             case FLOAT:
                 Double.parseDouble(propValue);
                 break;
-//            default:
-//                throw new IllegalArgumentException("Unknown param type " + paramType + " for property " + propName);
+            default:
+                throw new IllegalArgumentException("Unknown param type " + paramType + " for property " + propName);
         }
     }
 
