@@ -461,4 +461,126 @@ public class PropertyLoaderTest {
         Assert.assertNull(propertyLoader.getProperties().get("Ttl"));
         Assert.assertEquals(31337, Integer.parseInt(propertyLoader.getProperties().get("ttl")));
     }
+
+    @Test
+    public void redefineExternalPropertyFileFromCmdTest() {
+        String temp = SharedTestCommands.generateTempPropertyFile().getPath();
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        String propertyPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "other_properties.properties";
+
+        String[] cmdArgs = new String[]{"--DB_USER", "User", "--property-FILE", propertyPath, "--DB_path", "/opt/server/db"};
+
+        environmentVariables.set("test.MAIN_USERNAME", "Luigi");
+        environmentVariables.set("test.CITY", "London");
+        environmentVariables.set("test.DB_path", "Localhost");
+
+        propertyLoader.buildProperties(cmdArgs, temp, "test.", "properties.properties");
+        var properties = propertyLoader.getProperties();
+
+        Assert.assertEquals("Check properties count after loading", 10, properties.size());
+
+        //properties from cmd
+        Assert.assertFalse("property path to property-file must be missing", properties.containsKey("property-FILE"));
+        Assert.assertEquals("User", properties.get("db_user"));
+        Assert.assertEquals("/opt/server/db", properties.get("Db_PATH"));
+
+        //redefined property-file
+        Assert.assertEquals("Mario", properties.get("main_username"));
+        Assert.assertEquals("2 days", properties.get("DelayTime"));
+        Assert.assertFalse(properties.containsKey("db_pass"));
+        Assert.assertEquals("123456", properties.get("db_password"));
+
+        //Env
+        Assert.assertEquals("London", properties.get("CITY"));
+
+        //properties from outer properties file
+        Assert.assertEquals(5, Integer.parseInt(properties.get("Ttl")));
+        Assert.assertEquals(3.1415, Double.parseDouble(properties.get("DN")), 0.1);
+    }
+
+
+    @Test
+    public void redefineExternalPropertyFileFromEnvTest() {
+        String temp = SharedTestCommands.generateTempPropertyFile().getPath();
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        String propertyPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "other_properties.properties";
+
+        String[] cmdArgs = new String[]{"--DB_USER", "User", "--DB_path", "/opt/server/db"};
+
+        environmentVariables.set("test.MAIN_USERNAME", "Luigi");
+        environmentVariables.set("test.CITY", "London");
+        environmentVariables.set("test.property-FILE", propertyPath);
+        environmentVariables.set("test.DB_path", "Localhost");
+
+        propertyLoader.buildProperties(cmdArgs, temp, "test.", "properties.properties");
+        var properties = propertyLoader.getProperties();
+
+        Assert.assertEquals("Check properties count after loading", 10, properties.size());
+
+        //properties from cmd
+        Assert.assertFalse("property path to property-file must be missing", properties.containsKey("property-FILE"));
+        Assert.assertEquals("User", properties.get("db_user"));
+        Assert.assertEquals("/opt/server/db", properties.get("Db_PATH"));
+
+        //redefined property-file
+        Assert.assertEquals("Mario", properties.get("main_username"));
+        Assert.assertEquals("2 days", properties.get("DelayTime"));
+        Assert.assertFalse(properties.containsKey("db_pass"));
+        Assert.assertEquals("123456", properties.get("db_password"));
+
+        //Env
+        Assert.assertEquals("London", properties.get("CITY"));
+
+        //properties from outer properties file
+        Assert.assertEquals(5, Integer.parseInt(properties.get("Ttl")));
+        Assert.assertEquals(3.1415, Double.parseDouble(properties.get("DN")), 0.1);
+    }
+
+    @Test
+    public void cantRedefineExternalPropertyFileFromCmdTest() {
+        String temp = SharedTestCommands.generateTempPropertyFile().getPath();
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+
+        propertyLoader.setCanRedefineExternalPropertyFile(false);
+
+        String propertyPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "other_properties.properties";
+
+        String[] cmdArgs = new String[]{"--DB_USER", "User", "--property-FILE", propertyPath, "--DB_path", "/opt/server/db"};
+
+
+        try {
+            propertyLoader.buildProperties(cmdArgs, temp, "test.", "properties.properties");
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Unknown property \"property-FILE\" was found in command line arguments", e.getMessage());
+        }
+    }
+
+    @Test
+    public void cantRedefineExternalPropertyFileFromEnvTest() {
+        String temp = SharedTestCommands.generateTempPropertyFile().getPath();
+        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+
+        propertyLoader.setCanRedefineExternalPropertyFile(false);
+
+        String propertyPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "other_properties.properties";
+
+        String[] cmdArgs = new String[]{"--DB_USER", "User", "--DB_path", "/opt/server/db"};
+
+        environmentVariables.set("test.MAIN_USERNAME", "Luigi");
+        environmentVariables.set("test.CITY", "London");
+        environmentVariables.set("test.property-FILE", propertyPath);
+        environmentVariables.set("test.DB_path", "Localhost");
+
+        try {
+            propertyLoader.buildProperties(cmdArgs, temp, "test.", "properties.properties");
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Unknown property \"property-FILE\" was found in environment (prefix \"test.\")", e.getMessage());
+        }
+    }
 }

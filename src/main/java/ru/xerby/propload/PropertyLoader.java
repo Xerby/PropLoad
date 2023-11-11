@@ -16,10 +16,12 @@ import java.util.TreeMap;
 public class PropertyLoader {
 
     private static final String DEFAULT_INNER_PROPERTY_FILE_NAME = "properties.properties";
+    private static final String REDEFINED_PROPERTY_FILE_PROPERTY_NAME = "property-file";
     @Getter(AccessLevel.NONE)
     private final PropertyRepository propertyRepository;
     private final Map<String, String> properties;
 
+    private boolean canRedefineExternalPropertyFile = true;
     private boolean isEnabledWindowsKeyCompatibility = false;
     private boolean throwExceptionIfUnboundTokenFound = true;
     private boolean isParametrizedWithoutEqualSignAllowed = true;
@@ -134,13 +136,21 @@ public class PropertyLoader {
                                 String outerFilePath,
                                 String envPropertyPrefix,
                                 String resourceName) {
+        if (canRedefineExternalPropertyFile)
+            propertyRepository.registerProperty(new PropertyDefinition(REDEFINED_PROPERTY_FILE_PROPERTY_NAME, "Path to external properties file",
+                    null, PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.STRING));
+
         properties.clear();
         loadFromCmdArgs(commandLineArgs);
+
+        outerFilePath = getExternalPropertyFilePath(outerFilePath, envPropertyPrefix);
 
         if (outerFilePath != null)
             loadFromFile(Paths.get(outerFilePath).toFile());
 
         loadFromEnvironment(envPropertyPrefix);
+
+        properties.remove(REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
 
         InputStream resource;
         if (resourceName != null) {
@@ -156,6 +166,27 @@ public class PropertyLoader {
         }
 
         setDefaultIfIsNotSet();
+    }
+
+    protected String getExternalPropertyFilePath(String originalExternalPropertyFilePath, String envPropertyPrefix) {
+        if (!canRedefineExternalPropertyFile)
+            return originalExternalPropertyFilePath;
+
+        if (!properties.containsKey(REDEFINED_PROPERTY_FILE_PROPERTY_NAME) && envPropertyPrefix != null) {
+            String envProp = System.getenv(envPropertyPrefix + REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
+            if (envProp != null)
+                properties.put(REDEFINED_PROPERTY_FILE_PROPERTY_NAME, envProp);
+        }
+
+        String externalPropertyFilePath = null;
+        if (properties.containsKey(REDEFINED_PROPERTY_FILE_PROPERTY_NAME)) {
+            externalPropertyFilePath = properties.get(REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
+        } else {
+            if (envPropertyPrefix != null)
+                externalPropertyFilePath = System.getenv(envPropertyPrefix + REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
+        }
+
+        return externalPropertyFilePath == null ? originalExternalPropertyFilePath : externalPropertyFilePath;
     }
 
     @SuppressWarnings({"ResultOfMethodCallIgnored", "java:S2201"})
