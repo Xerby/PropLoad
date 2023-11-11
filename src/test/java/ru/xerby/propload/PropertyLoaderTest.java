@@ -1,5 +1,6 @@
 package ru.xerby.propload;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,6 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+
+@Slf4j
 public class PropertyLoaderTest {
 
     @Rule
@@ -34,8 +37,8 @@ public class PropertyLoaderTest {
             propertyLoader.loadFromCmdArgs(cmdArgs);
             Assert.fail("Check that if windows compatibility is disabled, windows-style keys cause exception");
         } catch (RuntimeException e) {
-            Assert.assertTrue("Check that if windows compatibility disabled, windows-style keys cause an exception with words \"unbound token\" and token name"
-                    , e.getMessage().toLowerCase().contains("unbound token") && e.getMessage().contains("SCHEDULED"));
+            Assert.assertTrue("Check that if windows compatibility disabled, windows-style keys cause an exception with words \"dangling token\" and token name"
+                    , e.getMessage().toLowerCase().contains("dangling token") && e.getMessage().contains("SCHEDULED"));
         }
     }
 
@@ -62,8 +65,8 @@ public class PropertyLoaderTest {
             propertyLoader.loadFromCmdArgs(cmdArgs);
             Assert.fail("Check that if ignoring redundant token is disabled, redundant token cause exception");
         } catch (RuntimeException e) {
-            Assert.assertTrue("Check that if ignoring redundant token is disabled, redundant token cause an exception with words \"unbound token\" and token name"
-                    , e.getMessage().toLowerCase().contains("unbound token") && e.getMessage().contains("DB_PASSWORD"));
+            Assert.assertTrue("Check that if ignoring redundant token is disabled, redundant token cause an exception with words \"dangling token\" and token name"
+                    , e.getMessage().toLowerCase().contains("dangling token") && e.getMessage().contains("DB_PASSWORD"));
         }
     }
 
@@ -509,6 +512,7 @@ public class PropertyLoaderTest {
 
         String[] cmdArgs = new String[]{"--DB_USER", "User", "--DB_path", "/opt/server/db"};
 
+        log.debug("propertyPath = {}", propertyPath);
         environmentVariables.set("test.MAIN_USERNAME", "Luigi");
         environmentVariables.set("test.CITY", "London");
         environmentVariables.set("test.property-FILE", propertyPath);
@@ -547,6 +551,7 @@ public class PropertyLoaderTest {
         propertyLoader.setCanRedefineExternalPropertyFile(false);
 
         String propertyPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "other_properties.properties";
+        log.debug("propertyPath = {}", propertyPath);
 
         String[] cmdArgs = new String[]{"--DB_USER", "User", "--property-FILE", propertyPath, "--DB_path", "/opt/server/db"};
 

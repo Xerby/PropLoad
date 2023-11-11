@@ -41,9 +41,9 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
                 propval = null;
             } else {
                 if (throwExceptionIfUnboundTokenFound)
-                    throw new RuntimeException("Unbound token found: " + key + " in " + Arrays.toString(args).replace(", ", " "));
+                    throw new RuntimeException("Dangling token found: " + key + " in " + Arrays.toString(args).replace(", ", " "));
                 else
-                    log.debug("Unbound token found: " + key + "\n in " + Arrays.toString(args).replace(", ", " "));
+                    log.debug("Dangling token found: " + key + "\n in " + Arrays.toString(args).replace(", ", " "));
             }
 
             if (propname != null && propname.contains("=")) {

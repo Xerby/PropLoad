@@ -1,6 +1,7 @@
 package ru.xerby.propload;
 
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.InputStream;
@@ -25,6 +26,7 @@ import java.util.TreeMap;
  * It must be specified in {@link PropertyRepository}.
  */
 @Data
+@Slf4j
 public class PropertyLoader {
 
     private static final String DEFAULT_INNER_PROPERTY_FILE_NAME = "properties.properties";
@@ -228,13 +230,16 @@ public class PropertyLoader {
 
         if (!properties.containsKey(REDEFINED_PROPERTY_FILE_PROPERTY_NAME) && envPropertyPrefix != null) {
             String envProp = System.getenv(envPropertyPrefix + REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
-            if (envProp != null)
+            if (envProp != null) {
+                log.debug("Property " + envPropertyPrefix + REDEFINED_PROPERTY_FILE_PROPERTY_NAME + " was found in environment variables");
                 properties.put(REDEFINED_PROPERTY_FILE_PROPERTY_NAME, envProp);
+            }
         }
 
         String externalPropertyFilePath = null;
         if (properties.containsKey(REDEFINED_PROPERTY_FILE_PROPERTY_NAME)) {
             externalPropertyFilePath = properties.get(REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
+            log.debug("property-file path was overridden to " + externalPropertyFilePath);
         } else {
             if (envPropertyPrefix != null)
                 externalPropertyFilePath = System.getenv(envPropertyPrefix + REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
