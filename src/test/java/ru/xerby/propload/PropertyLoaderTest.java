@@ -262,7 +262,7 @@ public class PropertyLoaderTest {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
             Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
         } catch (NumberFormatException e) {
-            Assert.assertEquals("For input string: \"5g\"", e.getMessage());
+            Assert.assertTrue(e.getMessage().endsWith("integer, but input string: \"5g\""));
         }
     }
 
@@ -296,7 +296,7 @@ public class PropertyLoaderTest {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
             Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
         } catch (NumberFormatException e) {
-            Assert.assertEquals("For input string: \"5,55\"", e.getMessage());
+            Assert.assertTrue(e.getMessage().endsWith("integer, but input string: \"5,55\""));
         }
     }
 

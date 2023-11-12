@@ -325,24 +325,24 @@ public class PropertyLoader {
 
     private int getAsInt(String propValue, String keyForLogging) {
         if (propValue == null)
-            throw new IllegalArgumentException(keyForLogging + " should have been an integer, but it is null");
+            throw new NumberFormatException(keyForLogging + " should have been an integer, but it is null");
         else {
             try {
                 return Integer.parseInt(propValue);
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(keyForLogging + " should have been an integer, but it is " + propValue);
+                throw new NumberFormatException(keyForLogging + " should have been an integer, but input string: \"" + propValue + "\"");
             }
         }
     }
 
     private double getAsDouble(String propValue, String keyForLogging) {
         if (propValue == null)
-            throw new IllegalArgumentException(keyForLogging + " should have been a number, but it is null");
+            throw new NumberFormatException(keyForLogging + " should have been a number, but it is null");
         else {
             try {
                 return Double.parseDouble(propValue);
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(keyForLogging + " should have been a number, but it is " + propValue);
+                throw new NumberFormatException(keyForLogging + " should have been a number, but input string: \"" + propValue + "\"");
             }
         }
     }
