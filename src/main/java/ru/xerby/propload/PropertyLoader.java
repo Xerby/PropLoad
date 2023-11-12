@@ -94,7 +94,7 @@ public class PropertyLoader {
         this.properties = new TreeMap<>(caseSensitive ? String::compareTo : String::compareToIgnoreCase);
     }
 
-    public void loadFromCmdArgs(String[] args) {
+    protected void loadFromCmdArgs(String[] args) {
         ParsedCmdProperties parsedCmdProperties = ParsedCmdProperties.parse(args, isEnabledWindowsKeyCompatibility, throwExceptionIfUnboundTokenFound);
         for (ParsedCmdProperty parsedCmdProperty : parsedCmdProperties) {
             PropertyDefinition propertyDefinition = propertyDictionary.get(parsedCmdProperty.getKey());
@@ -114,11 +114,11 @@ public class PropertyLoader {
         }
     }
 
-    public void loadFromEnvironment() {
+    protected void loadFromEnvironment() {
         loadFromEnvironment(null);
     }
 
-    public void loadFromEnvironment(String envPropertyPrefix) {
+    protected void loadFromEnvironment(String envPropertyPrefix) {
         loadFromProperties(System.getenv(), envPropertyPrefix, throwExceptionIfUnknownEnvPropertyFound && envPropertyPrefix != null && !envPropertyPrefix.isEmpty());
     }
 
@@ -133,7 +133,7 @@ public class PropertyLoader {
     }
 
     @SneakyThrows
-    public void loadFromStream(InputStream stream) {
+    protected void loadFromStream(InputStream stream) {
         Properties loadedProperties = new Properties();
         loadedProperties.load(stream);
         loadFromProperties(loadedProperties, null, throwExceptionIfUnknownPropFilePropertyFound);
@@ -157,7 +157,7 @@ public class PropertyLoader {
             if (properties.containsKey(propName))
                 continue;
 
-            PropertyDefinition propertyDefinition = propertyRepository.get(propName);
+            PropertyDefinition propertyDefinition = propertyDictionary.get(propName);
             if (propertyDefinition == null)
                 if (throwExceptionIfUnknownPropertyFound)
                     throw new IllegalArgumentException("Unknown property \"" + propName + "\" was found in environment" +
@@ -176,7 +176,7 @@ public class PropertyLoader {
         }
     }
 
-    public void setDefaultIfIsNotSet() {
+    protected void setDefaultIfIsNotSet() {
         for (String propName : propertyDictionary.keySet()) {
             if (properties.containsKey(propName))
                 continue;
@@ -209,20 +209,21 @@ public class PropertyLoader {
 
         properties.remove(REDEFINED_PROPERTY_FILE_PROPERTY_NAME);
 
+        loadFromResource(resourceName);
+        setDefaultIfIsNotSet();
+    }
+
+    protected void loadFromResource(String resourceName) {
         InputStream resource;
         if (resourceName != null) {
             resource = getClass().getClassLoader().getResourceAsStream(resourceName);
             if (resource == null && throwExceptionIfPropertyResourceNotFound)
                 throw new IllegalArgumentException("Resource " + resourceName + " not found");
-            if (resource != null)
-                loadFromStream(resource);
         } else {
             resource = getClass().getClassLoader().getResourceAsStream(DEFAULT_INNER_PROPERTY_FILE_NAME);
-            if (resource != null)
-                loadFromStream(resource);
         }
-
-        setDefaultIfIsNotSet();
+        if (resource != null)
+            loadFromStream(resource);
     }
 
     protected String getExternalPropertyFilePath(String originalExternalPropertyFilePath, String envPropertyPrefix) {

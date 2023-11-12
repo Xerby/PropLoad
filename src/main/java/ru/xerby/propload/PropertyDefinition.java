@@ -71,12 +71,10 @@ public class PropertyDefinition {
     /**
      * Can or should a property have a parameter and how should it be designated
      * <p>If PARAMETER_PROHIBITED, then you can't use property with parameter. If parameter will be used, then exception will be thrown.
-     * If ONLY_EQUAL_SIGN_PARAMETER, then pair "key=value" will be treated as a parametrized key, but if you will use "key value",
-     * "key" will be treated as a key without parameter and "value" will be ignored and be returned as remainder part.
      * If PARAMETER_OPTIONAL then either "key=value" or "key value" will be treated as a parametrized key, but you also can use "key" without parameter.
      * If PARAMETER_REQUIRED then if you don't use parameter, then exception will be thrown.
      */
-    public enum ParametrizationDegree {PARAMETER_PROHIBITED, ONLY_EQUALS_SIGN_PARAMETER, PARAMETER_OPTIONAL, PARAMETER_REQUIRED}
+    public enum ParametrizationDegree {PARAMETER_PROHIBITED, PARAMETER_OPTIONAL, PARAMETER_REQUIRED}
 
     /**
      * What type of parameter can be used with a property. STRING by default

@@ -64,4 +64,8 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
     public void registerProperty(PropertyDefinition value) {
         this.put(value.getName(), value);
     }
+
+    public static PropertyDictionary loadFromResource(String fileName, boolean caseSensitive) {
+        return loadFromInputStream(PropertyDictionary.class.getClassLoader().getResourceAsStream(fileName), caseSensitive);
+    }
 }
