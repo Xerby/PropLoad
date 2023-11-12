@@ -6,6 +6,14 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 
+
+/**
+ * In PropLoad, there are two crucial concepts: "property" and "property-definition." A "property" is the outcome provided by the library, which represents
+ * a key-value pair. On the other hand, a "property-definition" is a structural element that defines the behavior and validation criteria for a property.
+ *
+ * <p>The library relies on a list of property definitions, known as "PropertyDictionary," to determine which properties should be available in the program
+ * and how to handle situations when they are absent.
+ */
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)

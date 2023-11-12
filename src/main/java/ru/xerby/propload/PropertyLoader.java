@@ -42,13 +42,14 @@ public class PropertyLoader {
     private boolean canRedefineExternalPropertyFile = true;
 
     /**
-     * If true, then the user can specify properties in the Windows way: /key value or /key=value. False by default.
+     * If true, then the user can specify properties in command-line in the Windows way: /key value or /key=value. False by default.
      */
     private boolean isEnabledWindowsKeyCompatibility = false;
 
     /**
-     * If true, then an exception will be thrown if a value is found that does not belong to any property.  If false, then such values will be ignored.
-     * For example, \"-key1=value1 -key2 value2 value3 -key5\". \"value2\" will be considered as a value for \"key2\" and \"key3\" will be considered as dangling token.
+     * If true, then an exception will be thrown if during a command-line parsing a value is found that does not belong to any property.
+     * If false, then such values will be ignored. For example, \"-key1=value1 -key2 value2 value3 -key5\". \"value2\" will be considered
+     * as a value for \"key2\" and \"key3\" will be considered as dangling token.
      * If true, then an exception will be thrown, if false, then \"key3\" will be ignored. True by default.
      */
     private boolean throwExceptionIfUnboundTokenFound = true;
