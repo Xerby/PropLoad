@@ -15,21 +15,21 @@ public class PropertyYamlTest {
     @Test
     public void testLoadYaml() throws IOException {
         Assert.assertFalse("File must not exist", file.exists());
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory()
                 .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
                 .disable(YAMLGenerator.Feature.SPLIT_LINES)
                 .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
-        mapper.writeValue(file, propertyRepository);
+        mapper.writeValue(file, propertyDictionary);
 
         try {
-            propertyRepository.clear();
+            propertyDictionary.clear();
 
-            propertyRepository = PropertyRepository.loadFromYamlFile(file);
-            Assert.assertEquals("Check that all properties were loaded", 12, propertyRepository.size());
+            propertyDictionary = PropertyDictionary.loadFromFile(file);
+            Assert.assertEquals("Check that all properties were loaded", 12, propertyDictionary.size());
 
-            PropertyDefinition dbPath = propertyRepository.get("DB_PATH");
+            PropertyDefinition dbPath = propertyDictionary.get("DB_PATH");
             Assert.assertTrue("Check name of parametrized property", dbPath.getName().equalsIgnoreCase("DB_PATH"));
             Assert.assertEquals("Check property description", "Path to database", dbPath.getDescription());
             Assert.assertEquals("Property which was created by createKeyValueRequiredProperty must have parameter",
@@ -38,14 +38,14 @@ public class PropertyYamlTest {
                     PropertyDefinition.ParamType.STRING, dbPath.getParamType());
             Assert.assertTrue("Property which was created by createKeyValueRequiredProperty must be required", dbPath.isRequired());
 
-            dbPath = propertyRepository.get("DELAYED");
+            dbPath = propertyDictionary.get("DELAYED");
             Assert.assertTrue("Check name of parameterless property", dbPath.getName().equalsIgnoreCase("DELAYED"));
             Assert.assertEquals("Property which was created by createParameterlessProperty must not have parameter",
                     PropertyDefinition.ParametrizationDegree.PARAMETER_PROHIBITED, dbPath.getParametrization());
             Assert.assertNull("When property is parameterless, its paramType must be null", dbPath.getParamType());
             Assert.assertFalse("Property which was created by createParameterlessProperty is not necessary", dbPath.isRequired());
 
-            dbPath = propertyRepository.get("SERVER_URL");
+            dbPath = propertyDictionary.get("SERVER_URL");
             Assert.assertEquals("Property which was created by createKeyValueOptionalProperty must have parameter",
                     PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, dbPath.getParametrization());
             Assert.assertEquals("Property which was created by createKeyValueOptionalProperty must be string",
@@ -60,14 +60,14 @@ public class PropertyYamlTest {
     @Test
     public void testLoadYamlWithoutPropertyNames() throws IOException {
         Assert.assertFalse("File must not exist", file.exists());
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
 
         StringWriter writer = new StringWriter();
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory()
                 .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
                 .disable(YAMLGenerator.Feature.SPLIT_LINES)
                 .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER));
-        mapper.writeValue(writer, propertyRepository);
+        mapper.writeValue(writer, propertyDictionary);
         String yamlContent = writer.toString();
         yamlContent = yamlContent.replaceAll("\\s\\sname:.*?\\n", "");
         Assert.assertFalse("Yaml must not contain property names", yamlContent.contains(" name:"));
@@ -77,14 +77,14 @@ public class PropertyYamlTest {
         }
 
         try {
-            propertyRepository.clear();
+            propertyDictionary.clear();
 
             try (InputStream inputStream = new FileInputStream(file)) {
-                propertyRepository = PropertyRepository.loadFromInputStream(inputStream);
+                propertyDictionary = PropertyDictionary.loadFromInputStream(inputStream);
             }
-            Assert.assertEquals("Check that all properties were loaded", 12, propertyRepository.size());
+            Assert.assertEquals("Check that all properties were loaded", 12, propertyDictionary.size());
 
-            PropertyDefinition dbPath = propertyRepository.get("DB_PATH");
+            PropertyDefinition dbPath = propertyDictionary.get("DB_PATH");
             Assert.assertTrue("Check name of parametrized property", dbPath.getName().equalsIgnoreCase("DB_PATH"));
             Assert.assertEquals("Check property description", "Path to database", dbPath.getDescription());
             Assert.assertEquals("Property which was created by createKeyValueRequiredProperty must have parameter",
@@ -93,7 +93,7 @@ public class PropertyYamlTest {
                     PropertyDefinition.ParamType.STRING, dbPath.getParamType());
             Assert.assertTrue("Property which was created by createKeyValueRequiredProperty must be required", dbPath.isRequired());
 
-            dbPath = propertyRepository.get("DELAYED");
+            dbPath = propertyDictionary.get("DELAYED");
             Assert.assertTrue("Check name of parameterless property", dbPath.getName().equalsIgnoreCase("DELAYED"));
         } finally {
             //noinspection ResultOfMethodCallIgnored

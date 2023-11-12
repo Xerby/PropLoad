@@ -12,7 +12,7 @@ import java.util.TreeMap;
 
 /**
  * This class is responsible for loading properties from different sources. Properties that should or can be loaded
- * are listed in the {@link PropertyRepository}; if the property is not in the repository, then it will not be loaded,
+ * are listed in the {@link PropertyDictionary}; if the property is not in the repository, then it will not be loaded,
  * even if it is present in one of the sources.
  * <p>If the same property is present in different sources, then preference is given to higher priority sources.
  * The command line has maximum priority, then the external settings file, then the environment and then
@@ -23,7 +23,7 @@ import java.util.TreeMap;
  * <p>The class also has many settings that allow you to process sources differently and validate them with varying degrees of strictness.
  * Is it possible to specify parameterized properties without an equal sign, is it possible to specify properties in the Windows way,
  * will an exception throw if an unknown command line parameter is encountered. The only parameter that is not set in this class is case sensitivity.
- * It must be specified in {@link PropertyRepository}.
+ * It must be specified in {@link PropertyDictionary}.
  */
 @Data
 @Slf4j
@@ -32,7 +32,7 @@ public class PropertyLoader {
     private static final String DEFAULT_INNER_PROPERTY_FILE_NAME = "properties.properties";
     private static final String REDEFINED_PROPERTY_FILE_PROPERTY_NAME = "property-file";
     @Getter(AccessLevel.NONE)
-    private final PropertyRepository propertyRepository;
+    private final PropertyDictionary propertyDictionary;
     private final Map<String, String> properties;
 
     /**
@@ -88,16 +88,16 @@ public class PropertyLoader {
     @Setter(AccessLevel.NONE)
     private boolean caseSensitive;
 
-    public PropertyLoader(PropertyRepository propertyRepository) {
-        this.propertyRepository = propertyRepository;
-        caseSensitive = propertyRepository.caseSensitive;
+    public PropertyLoader(PropertyDictionary propertyDictionary) {
+        this.propertyDictionary = propertyDictionary;
+        caseSensitive = propertyDictionary.caseSensitive;
         this.properties = new TreeMap<>(caseSensitive ? String::compareTo : String::compareToIgnoreCase);
     }
 
     public void loadFromCmdArgs(String[] args) {
         ParsedCmdProperties parsedCmdProperties = ParsedCmdProperties.parse(args, isEnabledWindowsKeyCompatibility, throwExceptionIfUnboundTokenFound);
         for (ParsedCmdProperty parsedCmdProperty : parsedCmdProperties) {
-            PropertyDefinition propertyDefinition = propertyRepository.get(parsedCmdProperty.getKey());
+            PropertyDefinition propertyDefinition = propertyDictionary.get(parsedCmdProperty.getKey());
             if (propertyDefinition == null)
                 if (throwExceptionIfUnknownCmdPropertyFound)
                     throw new IllegalArgumentException("Unknown property \"" + parsedCmdProperty.getKey() + "\" was found in command line arguments");
@@ -177,11 +177,11 @@ public class PropertyLoader {
     }
 
     public void setDefaultIfIsNotSet() {
-        for (String propName : propertyRepository.keySet()) {
+        for (String propName : propertyDictionary.keySet()) {
             if (properties.containsKey(propName))
                 continue;
 
-            PropertyDefinition propertyDefinition = propertyRepository.get(propName);
+            PropertyDefinition propertyDefinition = propertyDictionary.get(propName);
             if (propertyDefinition.getDefaultValue() == null && propertyDefinition.isRequired())
                 throw new IllegalArgumentException("Property " + propName + " is required, but it's not set");
             else if (propertyDefinition.getDefaultValue() != null)
@@ -194,7 +194,7 @@ public class PropertyLoader {
                                 String envPropertyPrefix,
                                 String resourceName) {
         if (canRedefineExternalPropertyFile)
-            propertyRepository.registerProperty(new PropertyDefinition(REDEFINED_PROPERTY_FILE_PROPERTY_NAME, "Path to external properties file",
+            propertyDictionary.registerProperty(new PropertyDefinition(REDEFINED_PROPERTY_FILE_PROPERTY_NAME, "Path to external properties file",
                     null, PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.STRING));
 
         properties.clear();

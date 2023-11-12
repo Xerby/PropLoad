@@ -16,10 +16,10 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromCmdArgsWindowsCompatibilityOptionTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
         String[] cmdArgs = new String[]{"--DelayTime", "5min", "/SCHEDULED", "/DB_USER=user", "--DB_PASSWORD", "password"};
 
-        PropertyLoader windowsPropertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader windowsPropertyLoader = new PropertyLoader(propertyDictionary);
         windowsPropertyLoader.setEnabledWindowsKeyCompatibility(true);
         windowsPropertyLoader.loadFromCmdArgs(cmdArgs);
         Assert.assertEquals("Check that we loaded all properties", 4, windowsPropertyLoader.getProperties().size());
@@ -28,7 +28,7 @@ public class PropertyLoaderTest {
                 windowsPropertyLoader.getProperties().get("SCHEDULED"));
         Assert.assertEquals("Check parameter value of windows-style property", "user", windowsPropertyLoader.getProperties().get("DB_USER"));
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         //propertyLoader.setEnabledWindowsKeyCompatibility(false) - by default
         try {
             propertyLoader.loadFromCmdArgs(cmdArgs);
@@ -42,10 +42,10 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromCmdArgsUnboundTokenFoundOptionTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
         String[] cmdArgs = new String[]{"--DelayTime", "5min", "--SCHEDULED", "--DB_USER=user", "DB_PASSWORD", "password"};
 
-        PropertyLoader forgivingPropertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader forgivingPropertyLoader = new PropertyLoader(propertyDictionary);
         forgivingPropertyLoader.setThrowExceptionIfUnboundTokenFound(false);
         forgivingPropertyLoader.loadFromCmdArgs(cmdArgs);
         Assert.assertEquals("Check that we loaded all proper properties", 3, forgivingPropertyLoader.getProperties().size());
@@ -56,7 +56,7 @@ public class PropertyLoaderTest {
                 forgivingPropertyLoader.getProperties().containsKey("DB_PASSWORD") || forgivingPropertyLoader.getProperties().containsValue("DB_PASSWORD")
                         || forgivingPropertyLoader.getProperties().containsKey("password") || forgivingPropertyLoader.getProperties().containsValue("password"));
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         //propertyLoader.setThrowExceptionIfUnboundTokenFound(true) - by default
         try {
             propertyLoader.loadFromCmdArgs(cmdArgs);
@@ -69,10 +69,10 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromCmdArgsParametrizedWithoutEqualSignOptionTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
         String[] cmdArgs = new String[]{"--DelayTime", "5min", "--SCHEDULED", "--DB_USER=user"};
 
-        PropertyLoader forgivingPropertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader forgivingPropertyLoader = new PropertyLoader(propertyDictionary);
         //forgivingPropertyLoader.setParametrizedWithoutEqualSignAllowed(true) - by default
         forgivingPropertyLoader.loadFromCmdArgs(cmdArgs);
         Assert.assertEquals("Check that we loaded all properties", 3, forgivingPropertyLoader.getProperties().size());
@@ -81,7 +81,7 @@ public class PropertyLoaderTest {
                 forgivingPropertyLoader.getProperties().get("SCHEDULED"));
         Assert.assertEquals("Check surely parametrized parameter value", "user", forgivingPropertyLoader.getProperties().get("DB_USER"));
 
-        PropertyLoader strictPropertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader strictPropertyLoader = new PropertyLoader(propertyDictionary);
         strictPropertyLoader.setParametrizedWithoutEqualSignAllowed(false);
         try {
             strictPropertyLoader.loadFromCmdArgs(cmdArgs);
@@ -92,7 +92,7 @@ public class PropertyLoaderTest {
                     , e.getMessage().toLowerCase().contains("parametrized without equal") && e.getMessage().contains("DelayTime"));
         }
 
-        PropertyLoader otherPropertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader otherPropertyLoader = new PropertyLoader(propertyDictionary);
         otherPropertyLoader.setParametrizedWithoutEqualSignAllowed(false);
         otherPropertyLoader.loadFromCmdArgs(new String[]{"--DelayTime", "--SCHEDULED", "--DB_PASSWORD=password"});
         Assert.assertEquals("Check that we loaded all the properties", 3, otherPropertyLoader.getProperties().size());
@@ -106,10 +106,10 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromCmdArgsUnknownCmdPropertyFoundOptionTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
         String[] cmdArgs = new String[]{"--DelayTime", "5min", "--SCHEDULED", "--DB_UNER=user", "--lala", "--DB_PASSWORD", "password"};
 
-        PropertyLoader typoForgivingPropertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader typoForgivingPropertyLoader = new PropertyLoader(propertyDictionary);
         typoForgivingPropertyLoader.setThrowExceptionIfUnknownCmdPropertyFound(false);
         typoForgivingPropertyLoader.loadFromCmdArgs(cmdArgs);
         Assert.assertEquals("Check that we loaded all properties that was in repository", 3, typoForgivingPropertyLoader.getProperties().size());
@@ -121,7 +121,7 @@ public class PropertyLoaderTest {
         Assert.assertNull("Check parameter value of property that wasn't in property repository but was in cmd args is null",
                 typoForgivingPropertyLoader.getProperties().get("DB_UNER"));
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         //propertyLoader.setThrowExceptionIfUnknownCmdPropertyFound(true) - by default
         Assert.assertThrows("Check that if \"throw exception if unknown cmd property found\" enabled, unknown property cause an exception"
                 , RuntimeException.class, () -> propertyLoader.loadFromCmdArgs(cmdArgs));
@@ -136,13 +136,13 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromCmdArgsCheckTypesTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
 
-        PropertyLoader goodPropertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader goodPropertyLoader = new PropertyLoader(propertyDictionary);
         goodPropertyLoader.loadFromCmdArgs(new String[]{"--TTL", "  5", "--SCHEDULED ", "--DEBUG", "faLse", "--DB_PASSWORD", "password", "--DN", "4.087     "});
         Assert.assertEquals("Check that we loaded all the properties", 5, goodPropertyLoader.getProperties().size());
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         Assert.assertThrows(NumberFormatException.class, () -> propertyLoader.loadFromCmdArgs(
                 new String[]{"--TTL", "5g", "--SCHEDULED", "--DEBUG", "false", "--DB_PASSWORD", "password", "--DN", "4.087"}));
         Assert.assertThrows(IllegalArgumentException.class, () -> propertyLoader.loadFromCmdArgs(
@@ -156,9 +156,9 @@ public class PropertyLoaderTest {
     @Test
     public void loadFromEnvironmentEmptyTest() {
         //we use long and bizarre names for properties to check that we don't accidentally affect real environmental variables
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepositoryWithLongNames();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyRepositoryWithLongNames();
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         propertyLoader.loadFromEnvironment();
         Assert.assertEquals("Check that we don't load any property, because environmental variables don't contain properties with such names",
                 0, propertyLoader.getProperties().size());
@@ -167,7 +167,7 @@ public class PropertyLoaderTest {
     @Test
     public void loadFromEnvironmentParamTypesTest() {
         //we use long and bizarre names for properties to check that we don't accidentally affect real environmental variables
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepositoryWithLongNames();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyRepositoryWithLongNames();
         environmentVariables.set("CAN_YOU_SEE_THIS_DB_USER", "Egor");
         environmentVariables.set("DELAYED_ON_SEVEN_MINUTES", "");
         environmentVariables.set("DEBUG_OR_NOT_DEBUG", "false");
@@ -175,7 +175,7 @@ public class PropertyLoaderTest {
         environmentVariables.set("DNskfjsadkfasjdflsafj", "3.1415");
         environmentVariables.set("InsaneMadCrazyThing", "Opa");
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         propertyLoader.loadFromEnvironment();
         Assert.assertEquals("Check that we we have only 5 properties",
                 5, propertyLoader.getProperties().size());
@@ -194,7 +194,7 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromEnvironmentWithPrefixParamTypesTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
         environmentVariables.set("test_for_prefix.DB_USER", "Egor");
         environmentVariables.set("test_for_prefix.DELAYED", "");
         environmentVariables.set("test_for_prefix.DEBUG", "false");
@@ -203,7 +203,7 @@ public class PropertyLoaderTest {
         environmentVariables.set("test_for_prefix.REDUNDANT", "BUM");
 //        environmentVariables.set("test_for_prefix.INSANE", "Opa"); //we don't set this property to check that we don't load it
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         propertyLoader.setThrowExceptionIfUnknownEnvPropertyFound(false);
         propertyLoader.loadFromEnvironment("test_for_prefix.");
         Assert.assertEquals("Check that we we have only 5 properties",
@@ -227,7 +227,7 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromEnvironmentWithPrefixRedundantPropertyTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
         environmentVariables.set("test_for_prefix.DB_USER", "Egor");
         environmentVariables.set("test_for_prefix.DELAYED", "");
         environmentVariables.set("test_for_prefix.DEBUG", "false");
@@ -236,7 +236,7 @@ public class PropertyLoaderTest {
         environmentVariables.set("test_for_prefix.REDUNDANT", "BUM");
 //        environmentVariables.set("test_for_prefix.INSANE", "Opa");
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 //        propertyLoader.setThrowExceptionIfUnknownEnvPropertyFound(true) - by default
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
@@ -251,13 +251,13 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromPropertyErroneousIntCheckTypesTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
 
         environmentVariables.set("test_for_prefix.DB_USER", "Egor");
         environmentVariables.set("test_for_prefix.DEBUG", "false");
         environmentVariables.set("test_for_prefix.TTL", "5g");
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
             Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
@@ -269,13 +269,13 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromPropertyErroneousBooleanCheckTypesTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
 
         environmentVariables.set("test_for_prefix.DB_USER", "Egor");
         environmentVariables.set("test_for_prefix.DELAYED", "");
         environmentVariables.set("test_for_prefix.DEBUG", "5");
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
             Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
@@ -286,12 +286,12 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromPropertyErroneousDoubleCheckTypesTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
 
         environmentVariables.set("test_for_prefix.DEBUG", "false");
         environmentVariables.set("test_for_prefix.TTL", "5,55");
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
             Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
@@ -302,11 +302,11 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromPropertyErroneousParameterlessCheckTypesTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
 
         environmentVariables.set("test_for_prefix.DELAYED", "Egor");
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         try {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
             Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
@@ -317,8 +317,8 @@ public class PropertyLoaderTest {
 
     @Test
     public void loadFromPropertiesFromResourceFileTest() throws URISyntaxException {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         File file = new File(getClass().getClassLoader().getResource("properties.properties").toURI());
         propertyLoader.loadFromFile(file);
@@ -337,8 +337,8 @@ public class PropertyLoaderTest {
     @Test
     public void loadFromOuterFileTest() throws IOException {
         File temp = SharedTestCommands.generateTempPropertyFile();
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         propertyLoader.loadFromFile(temp);
 
@@ -347,8 +347,8 @@ public class PropertyLoaderTest {
 
     @Test
     public void setDefaultsTest() {
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         Assert.assertEquals("Check properties count after creation", 0, propertyLoader.getProperties().size());
 
@@ -368,8 +368,8 @@ public class PropertyLoaderTest {
     @Test
     public void comprehensiveLoadTest() {
         File temp = SharedTestCommands.generateTempPropertyFile();
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         String[] cmdArgs = new String[]{"--DEBUG", "false", "--DB_USER", "User", "--DB_path", "/opt/server/db", "--SERVER_URL", "xerby.ru"};
         environmentVariables.set("test_for_prefix.DEBUG", "true");
@@ -408,8 +408,8 @@ public class PropertyLoaderTest {
     @Test
     public void notAllRequiredPropertiesWereDefinedTest() {
         String temp = SharedTestCommands.generateTempPropertyFile().getPath();
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         String[] cmdArgs = new String[]{"--DEBUG", "false", "--DB_USER", "User", "--SERVER_URL", "xerby.ru"};
         environmentVariables.set("test_for_prefix.DEBUG", "true");
@@ -429,8 +429,8 @@ public class PropertyLoaderTest {
     @Test
     public void caseSensitiveLoadTest() {
         String temp = SharedTestCommands.generateTempPropertyFile().getPath();
-        PropertyRepository propertyRepository = SharedTestCommands.createCaseSensetiveTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createCaseSensetiveTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         String[] cmdArgs = new String[]{"--DB_USER", "User", "--DB_path", "/opt/server/db"};
         environmentVariables.set("test_for_prefix.DB_Path", "Admin");
@@ -465,8 +465,8 @@ public class PropertyLoaderTest {
     @Test
     public void redefineExternalPropertyFileFromCmdTest() {
         String temp = SharedTestCommands.generateTempPropertyFile().getPath();
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         String propertyPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "other_properties.properties";
 
         String[] cmdArgs = new String[]{"--DB_USER", "User", "--property-FILE", propertyPath, "--DB_path", "/opt/server/db"};
@@ -503,8 +503,8 @@ public class PropertyLoaderTest {
     @Test
     public void redefineExternalPropertyFileFromEnvTest() {
         String temp = SharedTestCommands.generateTempPropertyFile().getPath();
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
         String propertyPath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "other_properties.properties";
 
         String[] cmdArgs = new String[]{"--DB_USER", "User", "--DB_path", "/opt/server/db"};
@@ -541,8 +541,8 @@ public class PropertyLoaderTest {
     @Test
     public void cantRedefineExternalPropertyFileFromCmdTest() {
         String temp = SharedTestCommands.generateTempPropertyFile().getPath();
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         propertyLoader.setCanRedefineExternalPropertyFile(false);
 
@@ -562,8 +562,8 @@ public class PropertyLoaderTest {
     @Test
     public void cantRedefineExternalPropertyFileFromEnvTest() {
         String temp = SharedTestCommands.generateTempPropertyFile().getPath();
-        PropertyRepository propertyRepository = SharedTestCommands.createTestPropertyRepository();
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         propertyLoader.setCanRedefineExternalPropertyFile(false);
 
