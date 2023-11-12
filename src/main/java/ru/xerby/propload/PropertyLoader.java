@@ -280,13 +280,13 @@ public class PropertyLoader {
             case STRING:
                 break;
             case INTEGER:
-                Integer.parseInt(propValue);
+                getAsInt(propValue, propName);
                 break;
             case BOOLEAN:
                 getAsBoolean(propValue, propName);
                 break;
             case FLOAT:
-                Double.parseDouble(propValue);
+                getAsDouble(propValue, propName);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown param type " + paramType + " for property " + propName);
@@ -295,6 +295,18 @@ public class PropertyLoader {
 
     public boolean getAsBoolean(String key) {
         return getAsBoolean(properties.get(key), key);
+    }
+
+    public int getAsInt(String key) {
+        return getAsInt(properties.get(key), key);
+    }
+
+    public double getAsDouble(String key) {
+        return getAsDouble(properties.get(key), key);
+    }
+
+    public String get(String key) {
+        return properties.get(key);
     }
 
     private boolean getAsBoolean(String propValue, String keyForLogging) {
@@ -308,6 +320,30 @@ public class PropertyLoader {
                 return false;
             else
                 throw new IllegalArgumentException("Unknown boolean value " + value + " for property " + keyForLogging);
+        }
+    }
+
+    private int getAsInt(String propValue, String keyForLogging) {
+        if (propValue == null)
+            throw new IllegalArgumentException(keyForLogging + " should have been an integer, but it is null");
+        else {
+            try {
+                return Integer.parseInt(propValue);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(keyForLogging + " should have been an integer, but it is " + propValue);
+            }
+        }
+    }
+
+    private double getAsDouble(String propValue, String keyForLogging) {
+        if (propValue == null)
+            throw new IllegalArgumentException(keyForLogging + " should have been a number, but it is null");
+        else {
+            try {
+                return Double.parseDouble(propValue);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(keyForLogging + " should have been a number, but it is " + propValue);
+            }
         }
     }
 }
