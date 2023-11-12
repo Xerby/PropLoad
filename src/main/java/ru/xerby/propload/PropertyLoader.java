@@ -86,6 +86,12 @@ public class PropertyLoader {
      */
     private boolean throwExceptionIfPropertyResourceNotFound = true;
 
+    /**
+     * If true, then an exception will be thrown if the external property file  is not found. If false, then such properties will be ignored.
+     * True by default.
+     */
+    private boolean throwExceptionIfExternalPropertyFileNotFound = true;
+
     @Setter(AccessLevel.NONE)
     private boolean caseSensitive;
 
@@ -124,7 +130,15 @@ public class PropertyLoader {
     }
 
     @SneakyThrows
-    public void loadFromFile(File file) {
+    protected void loadFromFile(File file) {
+        if (!file.exists()) {
+            if (throwExceptionIfExternalPropertyFileNotFound)
+                throw new IllegalArgumentException("External property file " + file.getAbsolutePath() + " not found");
+            else {
+                log.debug("External property file " + file.getAbsolutePath() + " not found");
+                return;
+            }
+        }
         Properties loadedProperties = new Properties();
         try (var stream = file.toURI().toURL().openStream()) {
             loadedProperties.load(stream);
