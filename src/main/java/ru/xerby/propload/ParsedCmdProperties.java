@@ -18,27 +18,40 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
         String propname = null;
         String propval = null;
         boolean lastSymbolIsKey = false;
+        boolean oneHyphenMode = false;
+
         ParsedCmdProperties res = new ParsedCmdProperties();
         if (args == null) return res;
         for (String key : args) {
-            if (key.strip().startsWith("/") && isWindows && key.strip().length() > 1) {
+            String token = key.strip();
+            if (token.startsWith("/") && isWindows && token.length() > 1) {
                 if (propname != null) {
-                    res.add(propname, propval, false);
+                    res.add(propname, propval, false, oneHyphenMode);
                 }
-                propname = key.strip().substring(1);
+                propname = token.substring(1);
                 lastSymbolIsKey = true;
-            } else if (key.strip().startsWith("--") && key.strip().length() > 2) {
+                oneHyphenMode = false;
+            } else if (token.startsWith("--") && token.length() > 2) {
                 if (propname != null) {
-                    res.add(propname, propval, false);
+                    res.add(propname, propval, false, oneHyphenMode);
                 }
-                propname = key.strip().substring(2);
+                propname = token.substring(2);
                 lastSymbolIsKey = true;
+                oneHyphenMode = false;
+            } else if (token.startsWith("-") && token.length() > 1) {
+                if (propname != null) {
+                    res.add(propname, propval, false, oneHyphenMode);
+                }
+                propname = token.substring(1);
+                lastSymbolIsKey = true;
+                oneHyphenMode = true;
             } else if (lastSymbolIsKey) {
-                propval = key.strip();
+                propval = token;
                 lastSymbolIsKey = false;
-                res.add(propname, propval, false);
+                res.add(propname, propval, false, oneHyphenMode);
                 propname = null;
                 propval = null;
+                oneHyphenMode = false;
             } else {
                 if (throwExceptionIfUnboundTokenFound)
                     throw new RuntimeException("Dangling token found: " + key + " in " + Arrays.toString(args).replace(", ", " "));
@@ -51,13 +64,14 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
                 propname = propname.substring(0, propname.indexOf("=")).strip();
 
                 lastSymbolIsKey = false;
-                res.add(propname, propval, true);
+                res.add(propname, propval, true, oneHyphenMode);
                 propname = null;
                 propval = null;
+                oneHyphenMode = false;
             }
         }
         if (propname != null) {
-            res.add(propname, propval, false);
+            res.add(propname, propval, false, oneHyphenMode);
         }
         return res;
     }
@@ -67,11 +81,22 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
     }
 
     public void add(String key, String value, boolean isSurelyParametrized) {
-        if (key == null)
-            throw new RuntimeException("Key can't be null");
+        add(key, '\0', value, isSurelyParametrized);
+    }
+
+    public void add(String key, char ch, String value, boolean isSurelyParametrized) {
+        if (key == null && ch == '\0')
+            throw new RuntimeException("Either longKey or short key mustn't be be null");
         if (value == null && isSurelyParametrized)
             throw new RuntimeException("Value can't be null if isSurelyParametrized is true");
-        properties.add(new ParsedCmdProperty(key, value, isSurelyParametrized));
+        properties.add(new ParsedCmdProperty(key, ch, value, isSurelyParametrized));
+    }
+
+    private void add(String str, String val, boolean isSurelyParametrized, boolean isOneHyphenMode) {
+        if (isOneHyphenMode)
+            add(null, str.charAt(0), val, isSurelyParametrized);
+        else
+            add(str, '\0', val, isSurelyParametrized);
     }
 
     public ParsedCmdProperty getParsedCmdProperty(String key) {
@@ -121,7 +146,11 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (ParsedCmdProperty parsedCmdProperty : properties) {
-            sb.append("--").append(parsedCmdProperty.getKey());
+            if (parsedCmdProperty.getLongKey() == null)
+                sb.append("-").append(parsedCmdProperty.getShortKey());
+            else
+                sb.append("--").append(parsedCmdProperty.getLongKey());
+
             if (parsedCmdProperty.isSurelyParametrized()) {
                 sb.append("=").append(parsedCmdProperty.getValue());
             } else if (parsedCmdProperty.getValue() != null) {
@@ -129,6 +158,8 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
             }
             sb.append(" ");
         }
+        sb.deleteCharAt(sb.length() - 1);
+
         return sb.toString();
     }
 

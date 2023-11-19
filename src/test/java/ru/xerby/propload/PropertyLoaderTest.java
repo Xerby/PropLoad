@@ -154,6 +154,64 @@ public class PropertyLoaderTest {
     }
 
     @Test
+    public void loadFromCmdArgsUsingCmdAliases() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader;
+        String[] cmdArgs;
+
+        cmdArgs = new String[]{"--DelayTime", "5min", "--user=user", "--dunno", "6.5"};
+        propertyLoader = new PropertyLoader(propertyDictionary);
+        propertyLoader.loadFromCmdArgs(cmdArgs);
+        Assert.assertEquals("Check that we loaded all properties", 3, propertyLoader.getProperties().size());
+        Assert.assertEquals("Check that we get property by its cmd-alias", 6.5, propertyLoader.getAsDouble("dn"), 0.1);
+        Assert.assertEquals("5min", propertyLoader.getProperties().get("delaytime"));
+        Assert.assertEquals("Check that we get property by its cmd-alias", "user", propertyLoader.getProperties().get("main_username"));
+
+        cmdArgs = new String[]{"--DelayTime", "5min", "--name=grigory", "--dn", "7.8"};
+        propertyLoader = new PropertyLoader(propertyDictionary);
+        propertyLoader.loadFromCmdArgs(cmdArgs);
+        Assert.assertEquals("Check that we loaded all properties", 3, propertyLoader.getProperties().size());
+        Assert.assertEquals("Check that we get property by its other cmd-alias", 7.8, propertyLoader.getAsDouble("dn"), 0.1);
+        Assert.assertEquals("Check that we get property by its name", "grigory", propertyLoader.getProperties().get("main_username"));
+    }
+
+    @Test
+    public void loadFromCmdArgsUsingCharCmdAlias() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader;
+        String[] cmdArgs;
+
+        cmdArgs = new String[]{"--DelayTime", "5min", "-u=oleg", "-d", "YES"};
+        propertyLoader = new PropertyLoader(propertyDictionary);
+        propertyLoader.loadFromCmdArgs(cmdArgs);
+        Assert.assertEquals("Check that we loaded all properties", 3, propertyLoader.getProperties().size());
+        Assert.assertEquals("Check that we get property by its other cmd-alias", "oleg", propertyLoader.get("main_username"));
+        Assert.assertTrue("Check that we get property by its name", propertyLoader.getAsBoolean("debug"));
+    }
+
+    @Test
+    public void cantLoadFromCmdArgsUsingLongCmdAliasInsteadOfShort() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader;
+        String[] cmdArgs;
+
+        cmdArgs = new String[]{"--u=oleg", "--d", "YES"};
+        propertyLoader = new PropertyLoader(propertyDictionary);
+        Assert.assertThrows(IllegalArgumentException.class, () -> propertyLoader.loadFromCmdArgs(cmdArgs));
+    }
+
+    @Test
+    public void cantLoadFromCmdArgsUsingShortCmdAliasInsteadOfLong() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader;
+        String[] cmdArgs;
+
+        cmdArgs = new String[]{"-DelayTime", "5min", "-debug=YES"};
+        propertyLoader = new PropertyLoader(propertyDictionary);
+        Assert.assertThrows(IllegalArgumentException.class, () -> propertyLoader.loadFromCmdArgs(cmdArgs));
+    }
+
+    @Test
     public void loadFromEnvironmentEmptyTest() {
         //we use long and bizarre names for properties to check that we don't accidentally affect real environmental variables
         PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyRepositoryWithLongNames();

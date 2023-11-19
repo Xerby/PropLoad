@@ -16,7 +16,7 @@ public class SharedTestCommands {
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueRequiredProperty("DB_user", "Database user"));
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueOptionalProperty("DB_Password", "Database password"));
         propertyDictionary.registerProperty(new PropertyDefinition("main_username", null, "me",
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.STRING));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.STRING, 'u', "user", "username", "name"));
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueOptionalProperty("server_URL", "SR2E server URL"));
         propertyDictionary.registerProperty(PropertyDefinition.createParameterlessProperty("Delayed",
                 "Program will show main window not right away after run, but in a minute (suitable for use with autorun, so as not to annoy the user with the appearance of the program even before the operating system is fully loaded)"));
@@ -25,11 +25,11 @@ public class SharedTestCommands {
         propertyDictionary.registerProperty(new PropertyDefinition("DelayTime", "Value for delay after program starts", "60s",
                 PropertyDefinition.ParametrizationDegree.PARAMETER_OPTIONAL, false, PropertyDefinition.ParamType.STRING));
         propertyDictionary.registerProperty(new PropertyDefinition("DEBUG", "Is debug mode enabled", null,
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, true, PropertyDefinition.ParamType.BOOLEAN));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, true, PropertyDefinition.ParamType.BOOLEAN, 'd'));
         propertyDictionary.registerProperty(new PropertyDefinition("TTL", "Server timeout (in millis)", "3000",
                 PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.INTEGER));
         propertyDictionary.registerProperty(new PropertyDefinition("DN", "I don't know what property it must be", null,
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.FLOAT));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.FLOAT, '\0', "dunno"));
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueOptionalProperty("CITY", null));
 
         return propertyDictionary;

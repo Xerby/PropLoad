@@ -68,4 +68,38 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
     public static PropertyDictionary loadFromResource(String fileName, boolean caseSensitive) {
         return loadFromInputStream(PropertyDictionary.class.getClassLoader().getResourceAsStream(fileName), caseSensitive);
     }
+
+    public PropertyDefinition getByCmdProperty(ParsedCmdProperty prop) {
+        for (PropertyDefinition propertyDefinition : this.values()) {
+            if (isKeyForProperty(prop, propertyDefinition))
+                return propertyDefinition;
+        }
+
+        return null;
+    }
+
+    private boolean isKeyForProperty(ParsedCmdProperty prop, PropertyDefinition propertyDefinition) {
+        if (caseSensitive) {
+            if (propertyDefinition.getName().equals(prop.getLongKey()))
+                return true;
+            if (prop.getShortKey() != '\0' && Character.toLowerCase(propertyDefinition.getCharCmdAlias()) == Character.toLowerCase(prop.getShortKey()))
+                return true;
+            if (propertyDefinition.getCmdAliases() != null)
+                for (String cmdAlias : propertyDefinition.getCmdAliases()) {
+                    if (cmdAlias.equals(prop.getLongKey()))
+                        return true;
+                }
+        } else {
+            if (propertyDefinition.getName().equalsIgnoreCase(prop.getLongKey()))
+                return true;
+            if (prop.getShortKey() != '\0' && propertyDefinition.getCharCmdAlias() == prop.getShortKey())
+                return true;
+            if (propertyDefinition.getCmdAliases() != null)
+                for (String cmdAlias : propertyDefinition.getCmdAliases()) {
+                    if (cmdAlias.equalsIgnoreCase(prop.getLongKey()))
+                        return true;
+                }
+        }
+        return false;
+    }
 }

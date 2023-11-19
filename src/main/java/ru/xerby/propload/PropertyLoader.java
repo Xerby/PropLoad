@@ -48,15 +48,15 @@ public class PropertyLoader {
 
     /**
      * If true, then an exception will be thrown if during a command-line parsing a value is found that does not belong to any property.
-     * If false, then such values will be ignored. For example, \"-key1=value1 -key2 value2 value3 -key5\". \"value2\" will be considered
+     * If false, then such values will be ignored. For example, \"--key1=value1 --key2 value2 value3 --key5\". \"value2\" will be considered
      * as a value for \"key2\" and \"key3\" will be considered as dangling token.
      * If true, then an exception will be thrown, if false, then \"key3\" will be ignored. True by default.
      */
     private boolean throwExceptionIfUnboundTokenFound = true;
 
     /**
-     * If true, then the user can specify parameterized properties without an equal sign, for example, \"-key value\".
-     * If false, then such properties must use equal sign, for example, \"-key=value\". True by default.
+     * If true, then the user can specify parameterized properties without an equal sign, for example, \"--key value\".
+     * If false, then such properties must use equal sign, for example, \"--key=value\". True by default.
      */
     private boolean isParametrizedWithoutEqualSignAllowed = true;
 
@@ -104,7 +104,8 @@ public class PropertyLoader {
     protected void loadFromCmdArgs(String[] args) {
         ParsedCmdProperties parsedCmdProperties = ParsedCmdProperties.parse(args, isEnabledWindowsKeyCompatibility, throwExceptionIfUnboundTokenFound);
         for (ParsedCmdProperty parsedCmdProperty : parsedCmdProperties) {
-            PropertyDefinition propertyDefinition = propertyDictionary.get(parsedCmdProperty.getKey());
+            PropertyDefinition propertyDefinition = propertyDictionary.getByCmdProperty(parsedCmdProperty);
+
             if (propertyDefinition == null)
                 if (throwExceptionIfUnknownCmdPropertyFound)
                     throw new IllegalArgumentException("Unknown property \"" + parsedCmdProperty.getKey() + "\" was found in command line arguments");
@@ -112,10 +113,10 @@ public class PropertyLoader {
                     continue;
 
             if (parsedCmdProperty.isSurelyParametrized() || isParametrizedWithoutEqualSignAllowed) {
-                checkValueType(parsedCmdProperty.getKey(), parsedCmdProperty.getValue(), propertyDefinition.getParamType());
-                properties.put(parsedCmdProperty.getKey(), parsedCmdProperty.getValue());
+                checkValueType(propertyDefinition.getName(), parsedCmdProperty.getValue(), propertyDefinition.getParamType());
+                properties.put(propertyDefinition.getName(), parsedCmdProperty.getValue());
             } else if (parsedCmdProperty.getValue() == null)
-                properties.put(parsedCmdProperty.getKey(), null);
+                properties.put(propertyDefinition.getName(), null);
             else
                 throw new IllegalArgumentException("Property " + parsedCmdProperty.getKey() + " is parametrized without equal sign, but it's prohibited");
         }

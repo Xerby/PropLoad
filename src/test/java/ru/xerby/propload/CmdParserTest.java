@@ -42,6 +42,10 @@ public class CmdParserTest {
         Assert.assertEquals("Windows style simple key with non-windows parse mode",
                 props,
                 ParsedCmdProperties.parse(new String[]{"/delayed"}, false, false));
+
+        Assert.assertEquals("Can't recognize key with one minus parameter",
+                "-d",
+                ParsedCmdProperties.parse(new String[]{"-delayed"}, true, false).toString());
     }
 
     @Test
@@ -223,15 +227,13 @@ public class CmdParserTest {
 
         List<String> strings = new ArrayList<>();
 
-        strings.add("delayed:5min");
-        strings.add("mail");
-        strings.add("no-ops=false");
+        strings.add("--delayed 5min");
+        strings.add("--mail");
+        strings.add("--no-ops=false");
 
         for (ParsedCmdProperty prop : props) {
             Assert.assertTrue("Check toString() method " + prop.getKey(), strings.contains(prop.toString()));
             strings.remove(prop.toString());
         }
-
     }
-
 }

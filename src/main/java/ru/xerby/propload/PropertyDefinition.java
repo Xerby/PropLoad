@@ -24,6 +24,7 @@ public class PropertyDefinition {
     private final boolean isRequired; //can't be isRequired and hasDefaultValue at the same time
     private final ParamType paramType;
     private final String[] cmdAliases;
+    private final char charCmdAlias;
     private String name;
 
     public PropertyDefinition(
@@ -33,6 +34,7 @@ public class PropertyDefinition {
             @JsonProperty("parametrized") ParametrizationDegree parametrized,
             @JsonProperty("required") boolean isRequired,
             @JsonProperty("param_type") ParamType paramType,
+            @JsonProperty("char_cmd_alias") char charCmdAlias,
             @JsonProperty("cmd_aliases") String... cmdAliases) {
         this.name = name;
         this.description = description;
@@ -41,12 +43,13 @@ public class PropertyDefinition {
         this.isRequired = isRequired;
         this.paramType = paramType;
         this.cmdAliases = cmdAliases;
+        this.charCmdAlias = charCmdAlias;
         validate();
     }
 
 
     public PropertyDefinition(String name, String description, String defaultValue, ParametrizationDegree parametrized, boolean isRequired, ParamType paramType) {
-        this(name, description, defaultValue, parametrized, isRequired, paramType, null);
+        this(name, description, defaultValue, parametrized, isRequired, paramType, '\0', (String[]) null);
     }
 
     public static PropertyDefinition createParameterlessProperty(String name, String description) {
