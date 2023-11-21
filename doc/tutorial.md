@@ -83,15 +83,39 @@ a fitting value based on the specified type.
 
 Another important feature is the "cmdAliases" value. It provides an alternative way to specify a property on the command
 line. For example,
-if a parameter has the name "reinstall-dependencies" and "cmdAliases" is set to "redependence," you can set this
+if a parameter has the name "reinstall-dependencies" and "cmdAliases" is set to "redependence" and "dependencies" you
+can set this
 property in environment variables,
-properties files, and other sources using the name "reinstall-dependencies." On the command line, you can use both "
---reinstall-dependencies"
-and "--redependence" to set the property.
+properties files, and other sources using the name "reinstall-dependencies." On the command line, you can use any of the
+option
+"--reinstall-dependencies", "--redependence" or "--dependencies" to set the property.
+
+To declare such an array in a Yaml file, you can use one of two ways: either write each option on a new line, starting
+with a hyphen followed by a space.
+Or write all options separated by commas in square brackets.
+
+```Yaml
+main_username:
+  cmd_aliases:
+    - user
+    - username
+    - name
+  default_value: me
+  parametrization: PARAMETER_REQUIRED
+```
+
+or
+
+```Yaml
+main_username:
+  cmd_aliases: [ user, username, name ]
+  default_value: me
+  parametrization: PARAMETER_REQUIRED
+```
 
 Additionally, a one-letter shortcut can be established using the "charCmdAlias" property. For instance, if it is set
 to "d,"
-you can use not only "--reinstall-dependencies" and "--redependence" but also "-d" to set the property.
+you can use not only "--reinstall-dependencies", "--redependence" or "--dependencies" but also "-d" to set the property.
 
 **Loading Property Definitions**
 
