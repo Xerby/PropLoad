@@ -56,7 +56,9 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
 
     private static void adjustNames(PropertyDictionary propertyDictionary) {
         for (String key : propertyDictionary.keySet()) {
-            if (propertyDictionary.get(key).getName() == null)
+            if (propertyDictionary.get(key) == null)
+                propertyDictionary.put(key, new PropertyDefinition(key, null, null, null, false, null));
+            else if (propertyDictionary.get(key).getName() == null)
                 propertyDictionary.get(key).setName(key);
         }
     }

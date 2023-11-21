@@ -5,7 +5,7 @@ and invoking the register method or by generating a YAML file and loading it usi
 class.
 
 The `PropertyDefinition` class comprises the following
-properties: `description`, `defaultValue`, `parametrizationDegree`,
+properties: `description`, `defaultValue`, `parametrization`,
 `isRequired`, `paramType`, `cmdAliases`, `charCmdAlias`, and `name`. You can instantiate the `PropertyDefinition` class
 either using the constructor by
 defining all the properties or using one of the helper methods, such
@@ -61,7 +61,7 @@ Properties can be categorized as either "parameterized" or "unparameterized." Fo
 parameterized property,
 and "10m" is a value associated with it. The degree of parameterization for each property is specified using the "
 parametrization" parameter, which can be set to one of three values:
-"PARAMETER_REQUIRED," "PARAMETER_PROHIBITED," or "PARAMETER_OPTIONAL."
+"PARAMETER_REQUIRED", "PARAMETER_PROHIBITED", or "PARAMETER_OPTIONAL" (default).
 
 Properties can be categorized as either "required" or "optional," with the "required" parameter determining their
 status.
@@ -76,7 +76,8 @@ It's important to note that a property cannot simultaneously be "required" and h
 contradictory.
 Similarly, a property cannot have a default value and be parameterless, as this combination does not make sense.
 
-When a property can have a parameter, its type can be specified. By default, all parameters are considered strings,
+When a property can have a parameter, its type can be specified (paramType property). By default, all parameters are
+considered strings,
 but you can define them as BOOLEAN, INTEGER, or FLOAT. During loading, the property undergoes additional validation to
 ensure it contains
 a fitting value based on the specified type.

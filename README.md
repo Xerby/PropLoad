@@ -74,3 +74,5 @@ a `Map<String, String>`
 with all properties at once. Alternatively, you can access properties one at a time using methods
 like `get(String name)`
 or get typed values using `getAsInt`, `getAsDouble`, and `getAsBoolean` methods.
+
+You can find much more detailed information in the file [Tutorial.md](doc/tutorial.md).

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 
+import java.util.Optional;
+
 
 /**
  * In PropLoad, there are two crucial concepts: "property" and "property-definition." A "property" is the outcome provided by the library, which represents
@@ -47,6 +49,13 @@ public class PropertyDefinition {
         validate();
     }
 
+    public ParametrizationDegree getParametrization() {
+        return Optional.ofNullable(parametrization).orElse(ParametrizationDegree.PARAMETER_OPTIONAL);
+    }
+
+    public ParamType getParamType() {
+        return paramType == null && parametrization != ParametrizationDegree.PARAMETER_PROHIBITED ? ParamType.STRING : paramType;
+    }
 
     public PropertyDefinition(String name, String description, String defaultValue, ParametrizationDegree parametrized, boolean isRequired, ParamType paramType) {
         this(name, description, defaultValue, parametrized, isRequired, paramType, '\0', (String[]) null);
