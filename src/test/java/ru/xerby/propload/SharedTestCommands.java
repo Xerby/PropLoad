@@ -41,8 +41,10 @@ public class SharedTestCommands {
 
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueRequiredProperty("DB_PATH", "Path to database"));
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueRequiredProperty("DB_user", "Database user"));
+        propertyDictionary.registerProperty(new PropertyDefinition("main_username", null, null,
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.STRING, 'u', "user", "username", "name"));
         propertyDictionary.registerProperty(new PropertyDefinition("ttl", "Server timeout (in millis)", "3000",
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.INTEGER));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.INTEGER, 'T'));
         propertyDictionary.registerProperty(new PropertyDefinition("Dn", "I don't know what property it must be", null,
                 PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.FLOAT));
 

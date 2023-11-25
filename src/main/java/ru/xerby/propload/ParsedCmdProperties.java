@@ -33,14 +33,14 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
                 oneHyphenMode = false;
             } else if (token.startsWith("--") && token.length() > 2) {
                 if (propname != null) {
-                    res.add(propname, propval, false, oneHyphenMode);
+                    res.add(propname, null, false, oneHyphenMode);
                 }
                 propname = token.substring(2);
                 lastSymbolIsKey = true;
                 oneHyphenMode = false;
             } else if (token.startsWith("-") && token.length() > 1) {
                 if (propname != null) {
-                    res.add(propname, propval, false, oneHyphenMode);
+                    res.add(propname, null, false, oneHyphenMode);
                 }
                 propname = token.substring(1);
                 lastSymbolIsKey = true;
@@ -74,6 +74,10 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
             res.add(propname, propval, false, oneHyphenMode);
         }
         return res;
+    }
+
+    void add(ParsedCmdProperty parsedCmdProperty) {
+        properties.add(parsedCmdProperty);
     }
 
     public void add(String key) {

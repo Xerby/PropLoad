@@ -254,4 +254,60 @@ public class CmdLoaderTest {
             Assert.assertEquals("Property \"DB_path\" should have a value, but it doesn't", e.getMessage());
         }
     }
+
+    @Test
+    public void caseSensitiveShortKeyLoadTest() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createCaseSensetiveTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
+
+        String[] cmdArgs = new String[]{"--DB_user", "User", "-T=2500", "--DB_PATH", "/opt/server/db"};
+
+        propertyLoader.buildProperties(cmdArgs, null, "test.", null);
+        Assert.assertEquals(3, propertyLoader.getProperties().size());
+        Assert.assertEquals(2500, propertyLoader.getAsInt("ttl"));
+
+        cmdArgs = new String[]{"--DB_user", "User", "-t=2200", "--DB_PATH", "/opt/server/db"};
+        try {
+            propertyLoader.buildProperties(cmdArgs, null, "test.", null);
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("unknown property \"t\" was found in command line arguments", e.getMessage().toLowerCase());
+        }
+    }
+
+    @Test
+    public void caseInsensitiveShortKeyLoadTest() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
+
+        String[] cmdArgs = new String[]{"--DB_user", "User", "-U=admin", "--DB_PATH", "/opt/server/db"};
+
+        propertyLoader.buildProperties(cmdArgs, null, "test.", null);
+        Assert.assertEquals("admin", propertyLoader.get("main_username"));
+
+        cmdArgs = new String[]{"--DB_user", "User", "-u=general", "--DB_PATH", "/opt/server/db"};
+        propertyLoader.buildProperties(cmdArgs, null, "test.", null);
+
+        Assert.assertEquals("general", propertyLoader.get("main_username"));
+    }
+
+    @Test
+    public void caseSensitiveCmdLoadTest() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createCaseSensetiveTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
+
+        String[] cmdArgs = new String[]{"--DB_user", "User", "--name", "Stephan", "-T=2500", "--DB_PATH", "/opt/server/db"};
+
+        propertyLoader.buildProperties(cmdArgs, null, "test.", null);
+        Assert.assertEquals(4, propertyLoader.getProperties().size());
+        Assert.assertEquals("Stephan", propertyLoader.get("main_username"));
+
+        cmdArgs = new String[]{"--DB_user", "User", "--Name=Denedra", "--DB_PATH", "/opt/server/db"};
+        try {
+            propertyLoader.buildProperties(cmdArgs, null, "test.", null);
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("unknown property \"name\" was found in command line arguments", e.getMessage().toLowerCase());
+        }
+    }
 }

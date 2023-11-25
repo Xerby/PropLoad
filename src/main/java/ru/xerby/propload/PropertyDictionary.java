@@ -3,9 +3,12 @@ package ru.xerby.propload;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.SneakyThrows;
+import lombok.Synchronized;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 
 
@@ -22,6 +25,14 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
     public PropertyDictionary(boolean caseSensitive) {
         super(caseSensitive ? String::compareTo : String::compareToIgnoreCase);
         this.caseSensitive = caseSensitive;
+    }
+
+    public static PropertyDictionary loadFromResource(String fileName) {
+        return loadFromInputStream(PropertyDictionary.class.getClassLoader().getResourceAsStream(fileName), false);
+    }
+
+    private boolean areKeysEqual(String o1, String o2) {
+        return caseSensitive ? o1.equals(o2) : o1.equalsIgnoreCase(o2);
     }
 
     public PropertyDictionary() {
@@ -53,21 +64,33 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
         return propertyDictionary;
     }
 
-    public static PropertyDictionary loadFromResource(String fileName) {
-        return loadFromInputStream(PropertyDictionary.class.getClassLoader().getResourceAsStream(fileName), false);//todo:СКОРОиз ресурса
+    private boolean areKeysEqual(char o1, char o2) {
+        return caseSensitive ? o1 == o2 : Character.toLowerCase(o1) == Character.toLowerCase(o2);
     }
 
     public void registerProperty(PropertyDefinition value) {
         this.put(value.getName(), value);
     }
 
+    @Synchronized
     private void adjustNames() {
-        for (String key : keySet()) {
-            if (get(key) == null)
-                put(key, new PropertyDefinition(key, null, null, null, false, null)); //todo:СКОРО как раз кастомный ямл с массивами и без имён
-            else if (get(key).getName() == null)
-                get(key).setName(key);
+        Map<String, String> changedProperties = null;
+        for (Map.Entry<String, PropertyDefinition> e : entrySet()) {
+            if (e.getValue() == null)
+                put(e.getKey(), new PropertyDefinition(e.getKey(), null, null, null, false, null));
+            else if (e.getValue().getName() == null || e.getValue().getName().isEmpty())
+                e.getValue().setName(e.getKey());
+            else if (!areKeysEqual(e.getValue().getName(), e.getKey())) {
+                if (changedProperties == null)
+                    changedProperties = new HashMap<>();
+                changedProperties.put(e.getKey(), e.getValue().getName());
+            }
         }
+        if (changedProperties != null)
+            for (Map.Entry<String, String> e : changedProperties.entrySet()) {
+                put(e.getValue(), get(e.getKey()));
+                remove(e.getKey());
+            }
     }
 
     public static PropertyDictionary loadFromResource(String fileName, boolean caseSensitive) {
@@ -84,27 +107,16 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
     }
 
     private boolean isKeyForProperty(ParsedCmdProperty prop, PropertyDefinition propertyDefinition) {
-        if (caseSensitive) {
-            if (propertyDefinition.getName().equals(prop.getLongKey()))
-                return true;
-            if (prop.getShortKey() != '\0' && Character.toLowerCase(propertyDefinition.getCharCmdAlias()) == Character.toLowerCase(prop.getShortKey()))
-                return true;
-            if (propertyDefinition.getCmdAliases() != null)
-                for (String cmdAlias : propertyDefinition.getCmdAliases()) {
-                    if (cmdAlias.equals(prop.getLongKey()))
-                        return true;
-                }
-        } else {
-            if (propertyDefinition.getName().equalsIgnoreCase(prop.getLongKey()))
-                return true;
-            if (prop.getShortKey() != '\0' && propertyDefinition.getCharCmdAlias() == prop.getShortKey())
-                return true;
-            if (propertyDefinition.getCmdAliases() != null)
-                for (String cmdAlias : propertyDefinition.getCmdAliases()) {
-                    if (cmdAlias.equalsIgnoreCase(prop.getLongKey()))
-                        return true;
-                }
-        }
+        if (areKeysEqual(propertyDefinition.getName(), prop.getLongKey()))
+            return true;
+        if (prop.getShortKey() != '\0' && areKeysEqual(propertyDefinition.getCharCmdAlias(), prop.getShortKey()))
+            return true;
+        if (propertyDefinition.getCmdAliases() != null)
+            for (String cmdAlias : propertyDefinition.getCmdAliases()) {
+                if (areKeysEqual(cmdAlias, prop.getLongKey()))
+                    return true;
+            }
+
         return false;
     }
 }

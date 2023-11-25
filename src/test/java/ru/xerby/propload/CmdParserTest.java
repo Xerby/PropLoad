@@ -43,9 +43,13 @@ public class CmdParserTest {
                 props,
                 ParsedCmdProperties.parse(new String[]{"/delayed"}, false, false));
 
-        Assert.assertEquals("Can't recognize key with one minus parameter",
+        Assert.assertEquals("Recognize only first letter in key with one minus parameter",
                 "-d",
                 ParsedCmdProperties.parse(new String[]{"-delayed"}, true, false).toString());
+
+        Assert.assertEquals("Find short key with one minus parameter",
+                'd',
+                ParsedCmdProperties.parse(new String[]{"-d"}, true, false).getParsedCmdProperty("d").getShortKey());
     }
 
     @Test
@@ -75,6 +79,12 @@ public class CmdParserTest {
         Assert.assertNotEquals("Check that surely parametrized property is not equal not surely parametrized property with the same key and value",
                 props,
                 ParsedCmdProperties.parse(new String[]{"--delayed=5min"}, true, false));
+
+        props = new ParsedCmdProperties();
+        props.add(new ParsedCmdProperty('d', "5min", false));
+        Assert.assertEquals("Check short key with one minus parameter",
+                props,
+                ParsedCmdProperties.parse(new String[]{"-d", "5min"}, true, false));
     }
 
 
@@ -224,16 +234,25 @@ public class CmdParserTest {
         props.add("delayed", "5min", false);
         props.add("mail");
         props.add("no-ops", "false", true);
+        props.add(new ParsedCmdProperty('d', "5min", false));
 
         List<String> strings = new ArrayList<>();
 
         strings.add("--delayed 5min");
         strings.add("--mail");
         strings.add("--no-ops=false");
+        strings.add("-d 5min");
 
         for (ParsedCmdProperty prop : props) {
-            Assert.assertTrue("Check toString() method " + prop.getKey(), strings.contains(prop.toString()));
+            Assert.assertEquals("Check toString() method ", strings.get(0), prop.toString());
             strings.remove(prop.toString());
         }
+    }
+
+    @Test
+    public void testToComplexToString() {
+        var props = ParsedCmdProperties.parse(new String[]{"--delayed", "5min", "-u=gena", "-g", "-p", "8000", "/mail", "/no-ops=false"}, true, false);
+
+        Assert.assertEquals("Check toString() method ", "--delayed 5min -u=gena -g -p 8000 --mail --no-ops=false", props.toString());
     }
 }

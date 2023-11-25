@@ -15,6 +15,10 @@ class ParsedCmdProperty {
         this(longKey, '\0', value, isSurelyParametrized);
     }
 
+    public ParsedCmdProperty(char shortKey, String value, boolean isSurelyParametrized) {
+        this(null, shortKey, value, isSurelyParametrized);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

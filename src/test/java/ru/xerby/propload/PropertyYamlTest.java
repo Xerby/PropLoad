@@ -100,4 +100,26 @@ public class PropertyYamlTest {
             file.delete();
         }
     }
+
+    @Test
+    public void loadResourceTest() {
+        PropertyDictionary propertyDictionary = PropertyDictionary.loadFromResource("example.yaml");
+        Assert.assertEquals("Check that all properties were loaded", 7, propertyDictionary.size());
+
+        PropertyDefinition dbPath = propertyDictionary.get("DB_PATH");
+        Assert.assertEquals(PropertyDefinition.ParametrizationDegree.PARAMETER_OPTIONAL, dbPath.getParametrization());
+        Assert.assertEquals(PropertyDefinition.ParamType.STRING, dbPath.getParamType());
+
+        PropertyDefinition delayTime = propertyDictionary.get("delayTime");
+        Assert.assertEquals(PropertyDefinition.ParamType.INTEGER, delayTime.getParamType());
+        Assert.assertEquals("60", delayTime.getDefaultValue());
+        Assert.assertEquals(3, delayTime.getCmdAliases().length);
+        Assert.assertEquals('l', delayTime.getCharCmdAlias());
+        Assert.assertEquals(PropertyDefinition.ParametrizationDegree.PARAMETER_OPTIONAL, dbPath.getParametrization());
+
+        PropertyDefinition user = propertyDictionary.get("MAIN_USERNAME");
+        Assert.assertEquals("me", user.getDefaultValue());
+        Assert.assertEquals(3, user.getCmdAliases().length);
+        Assert.assertEquals(PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, user.getParametrization());
+    }
 }

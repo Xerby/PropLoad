@@ -1,0 +1,32 @@
+CITY:
+  parametrization: PARAMETER_REQUIRED
+DB_PASSWORD:
+  name: DB_Password
+  description: Database password
+  required: true
+  parametrization: PARAMETER_REQUIRED
+DB_PATH:
+
+DB_USER:
+
+DEBUG:
+  description: Is debug mode enabled
+  required: false
+  char_cmd_alias: d
+  parametrization: PARAMETER_PROHIBITED
+DELAY_TIME:
+  name: DelayTime
+  description: How many seconds of delay should there be between the start of the program and the first request to the server
+  required: false
+  param_type: INTEGER
+  char_cmd_alias: l
+  cmd_aliases: [ delay, delayed, delay_time ]
+  default_value: 60
+MAIN_USERNAME:
+  char_cmd_alias: u
+  cmd_aliases:
+    - user
+    - username
+    - name
+  default_value: me
+  parametrization: PARAMETER_REQUIRED
