@@ -40,7 +40,7 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
     public static PropertyDictionary loadFromInputStream(InputStream stream, boolean caseSensitive) {
         PropertyDictionary propertyDictionary = new ObjectMapper(new YAMLFactory()).readValue(stream, PropertyDictionary.class);
 
-        adjustNames(propertyDictionary);
+        propertyDictionary.adjustNames();
         return propertyDictionary;
     }
 
@@ -49,22 +49,25 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
     public static PropertyDictionary loadFromFile(File file, boolean caseSensitive) {
         PropertyDictionary propertyDictionary = new ObjectMapper(new YAMLFactory()).readValue(file, PropertyDictionary.class);
 
-        adjustNames(propertyDictionary);
+        propertyDictionary.adjustNames();
         return propertyDictionary;
     }
 
-
-    private static void adjustNames(PropertyDictionary propertyDictionary) {
-        for (String key : propertyDictionary.keySet()) {
-            if (propertyDictionary.get(key) == null)
-                propertyDictionary.put(key, new PropertyDefinition(key, null, null, null, false, null));
-            else if (propertyDictionary.get(key).getName() == null)
-                propertyDictionary.get(key).setName(key);
-        }
+    public static PropertyDictionary loadFromResource(String fileName) {
+        return loadFromInputStream(PropertyDictionary.class.getClassLoader().getResourceAsStream(fileName), false);//todo:СКОРОиз ресурса
     }
 
     public void registerProperty(PropertyDefinition value) {
         this.put(value.getName(), value);
+    }
+
+    private void adjustNames() {
+        for (String key : keySet()) {
+            if (get(key) == null)
+                put(key, new PropertyDefinition(key, null, null, null, false, null)); //todo:СКОРО как раз кастомный ямл с массивами и без имён
+            else if (get(key).getName() == null)
+                get(key).setName(key);
+        }
     }
 
     public static PropertyDictionary loadFromResource(String fileName, boolean caseSensitive) {

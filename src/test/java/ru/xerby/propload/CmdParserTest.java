@@ -24,7 +24,7 @@ public class CmdParserTest {
 
     @Test
     public void testSimpleProperty() {
-        var props = new ParsedCmdProperties();
+        ParsedCmdProperties props;
 
         props = new ParsedCmdProperties();
         props.add("delayed", null, false);
@@ -50,7 +50,7 @@ public class CmdParserTest {
 
     @Test
     public void testParametrizedProperty() {
-        var props = new ParsedCmdProperties();
+        ParsedCmdProperties props;
 
         props = new ParsedCmdProperties();
         props.add("delayed", "5min", false);
@@ -80,7 +80,7 @@ public class CmdParserTest {
 
     @Test
     public void testFewProperties() {
-        var props = new ParsedCmdProperties();
+        ParsedCmdProperties props;
 
         props = new ParsedCmdProperties();
         props.add("delayed");
@@ -106,7 +106,7 @@ public class CmdParserTest {
 
     @Test
     public void testWindowsKeys() {
-        var props = new ParsedCmdProperties();
+        ParsedCmdProperties props;
 
         props = new ParsedCmdProperties();
         props.add("delayed", "/5min", false);
@@ -124,7 +124,7 @@ public class CmdParserTest {
 
     @Test
     public void testRedundantToken() {
-        var props = new ParsedCmdProperties();
+        ParsedCmdProperties props;
 
         props = new ParsedCmdProperties();
         props.add("delayed", "/5min", false);
