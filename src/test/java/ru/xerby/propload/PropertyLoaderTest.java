@@ -369,7 +369,7 @@ public class PropertyLoaderTest {
             propertyLoader.loadFromEnvironment("test_for_prefix.");
             Assert.fail("loadFromEnvironment must cause an exception if erroneous types are found");
         } catch (IllegalArgumentException e) {
-            Assert.assertEquals("Property DELAYED is not parametrized, but it's value is Egor", e.getMessage());
+            Assert.assertEquals("Property \"DELAYED\" is parameterless, but its value is Egor", e.getMessage());
         }
     }
 
@@ -480,7 +480,7 @@ public class PropertyLoaderTest {
             propertyLoader.buildProperties(cmdArgs, temp, "test_for_prefix.", null);
             Assert.fail("Should throw exception, but it didn't");
         } catch (IllegalArgumentException e) {
-            Assert.assertEquals("property db_path is required, but it's not set", e.getMessage().toLowerCase());
+            Assert.assertEquals("property \"db_path\" is required, but it's not set", e.getMessage().toLowerCase());
         }
     }
 
@@ -639,6 +639,65 @@ public class PropertyLoaderTest {
             Assert.fail("Should throw exception, but it didn't");
         } catch (IllegalArgumentException e) {
             Assert.assertEquals("Unknown property \"property-FILE\" was found in environment (prefix \"test.\")", e.getMessage());
+        }
+    }
+
+    @Test
+    public void parametersConsistencyTest() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
+
+        environmentVariables.set("test.MAIN_USERNAME", "Luigi");
+        environmentVariables.set("test.Delayed", "certainly");
+        environmentVariables.set("test.DB_path", "Localhost");
+
+        try {
+            propertyLoader.buildProperties(null, null, "test.", "properties.properties");
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Property \"Delayed\" is parameterless, but its value is certainly", e.getMessage());
+        }
+
+        environmentVariables.set("test.MAIN_USERNAME", "Wario");
+        environmentVariables.set("test.Delayed", null);
+        environmentVariables.set("test.DB_path", null);
+
+        try {
+            propertyLoader.buildProperties(null, null, "test.", "properties.properties");
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Property \"DB_PATH\" is required, but it's not set", e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void cmdParametersConsistencyTest() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
+
+        String[] cmdArgs = new String[]{"--MAIN_USERNAME", "Luigi", "--Delayed=certainly", "--DB_path", "Localhost"};
+
+        try {
+            propertyLoader.buildProperties(cmdArgs, null, null, "properties.properties");
+            Assert.fail("When a parameterless property is initialized with a parameter using the equals sign, an exception must be thrown");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Property \"Delayed\" is parameterless, but its value is \"certainly\"", e.getMessage());
+        }
+
+        cmdArgs = new String[]{"--MAIN_USERNAME", "Luigi", "--Delayed", "certainly", "--DB_path", "Localhost"};
+        propertyLoader.buildProperties(cmdArgs, null, null, "properties.properties");
+
+        var properties = propertyLoader.getProperties();
+        Assert.assertNull("When a parameterless property is initialized with a parameter not using the equals sign, that parameter is ignored", properties.get("Delayed"));
+
+        cmdArgs = new String[]{"--Delayed", "--DB_path", "--MAIN_USERNAME", "Wario"};
+
+        try {
+            propertyLoader.buildProperties(cmdArgs, null, null, "properties.properties");
+            Assert.fail("When a parameterized property is initialized without a parameter, an exception must be thrown");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Property \"DB_path\" should have a value, but it doesn't", e.getMessage());
         }
     }
 }

@@ -112,13 +112,24 @@ public class PropertyLoader {
                 else
                     continue;
 
+            if (propertyDefinition.getParametrization() == PropertyDefinition.ParametrizationDegree.PARAMETER_PROHIBITED)
+                if (parsedCmdProperty.isSurelyParametrized())
+                    throw new IllegalArgumentException("Property \"" + parsedCmdProperty.getKey() + "\" is parameterless, but its value is \"" + parsedCmdProperty.getValue() + "\"");
+                else {
+                    properties.put(propertyDefinition.getName(), null);
+                    continue;
+                }
+
             if (parsedCmdProperty.isSurelyParametrized() || isParametrizedWithoutEqualSignAllowed) {
                 checkValueType(propertyDefinition.getName(), parsedCmdProperty.getValue(), propertyDefinition.getParamType());
                 properties.put(propertyDefinition.getName(), parsedCmdProperty.getValue());
             } else if (parsedCmdProperty.getValue() == null)
                 properties.put(propertyDefinition.getName(), null);
             else
-                throw new IllegalArgumentException("Property " + parsedCmdProperty.getKey() + " is parametrized without equal sign, but it's prohibited");
+                throw new IllegalArgumentException("Property \"" + parsedCmdProperty.getKey() + "\" is parametrized without equal sign, but it's prohibited");
+
+            if (propertyDefinition.getParametrization() == PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED && parsedCmdProperty.getValue() == null)
+                throw new IllegalArgumentException("Property \"" + parsedCmdProperty.getKey() + "\" should have a value, but it doesn't");
         }
     }
 
@@ -199,7 +210,7 @@ public class PropertyLoader {
 
             PropertyDefinition propertyDefinition = propertyDictionary.get(propName);
             if (propertyDefinition.getDefaultValue() == null && propertyDefinition.isRequired())
-                throw new IllegalArgumentException("Property " + propName + " is required, but it's not set");
+                throw new IllegalArgumentException("Property \"" + propName + "\" is required, but it's not set");
             else if (propertyDefinition.getDefaultValue() != null)
                 properties.put(propName, propertyDefinition.getDefaultValue());
         }
@@ -275,7 +286,7 @@ public class PropertyLoader {
             if ((propValue.isEmpty() || propValue.equals(" ")) || propValue.equals("true") || propValue.equals("t") || propValue.equals("yes") || propValue.equals("1") || propValue.equals("y"))
                 return;
             else
-                throw new IllegalArgumentException("Property " + propName + " is not parametrized, but it's value is " + propValue);
+                throw new IllegalArgumentException("Property \"" + propName + "\" is parameterless, but its value is " + propValue);
 
         switch (paramType) {
             case STRING:
