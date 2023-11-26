@@ -81,6 +81,8 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
             else if (e.getValue().getName() == null || e.getValue().getName().isEmpty())
                 e.getValue().setName(e.getKey());
             else if (!areKeysEqual(e.getValue().getName(), e.getKey())) {
+                if (!e.getKey().replaceAll("[^A-Za-z0-9]", "").equalsIgnoreCase(e.getValue().getName().replaceAll("[^A-Za-z0-9]", "")))
+                    throw new IllegalArgumentException("Property name must be almost the same as key, they can use different case or hyphens or dots, but alphanumerical characters must be equal (" + e.getKey() + " vs " + e.getValue().getName() + ")");
                 if (changedProperties == null)
                     changedProperties = new HashMap<>();
                 changedProperties.put(e.getKey(), e.getValue().getName());

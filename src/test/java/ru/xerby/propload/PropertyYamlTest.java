@@ -122,4 +122,14 @@ public class PropertyYamlTest {
         Assert.assertEquals(3, user.getCmdAliases().length);
         Assert.assertEquals(PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, user.getParametrization());
     }
+
+    @Test
+    public void loadBuggedResourceTest() {
+        try {
+            PropertyDictionary.loadFromResource("bugged_example.yaml");
+            Assert.fail("Must throw exception due to name mismatch");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Property name must be almost the same as key, they can use different case or hyphens or dots, but alphanumerical characters must be equal (SERVER_PORT vs ClientPort)", e.getMessage());
+        }
+    }
 }

@@ -1,0 +1,24 @@
+DEBUG:
+  description: Is debug mode enabled
+  required: false
+  char_cmd_alias: d
+  parametrization: PARAMETER_PROHIBITED
+DELAY_TIME:
+  name: DelayTime
+  description: How many seconds of delay should there be between the start of the program and the first request to the server
+  required: false
+  param_type: INTEGER
+  char_cmd_alias: l
+  cmd_aliases: [ delay, delayed, delay_time ]
+  default_value: 60
+SERVER_PORT:
+  name: ClientPort
+  description: this property contains a bug to demonstrate (and test) that the section name and the property name cannot be very different
+MAIN_USERNAME:
+  char_cmd_alias: u
+  cmd_aliases:
+    - user
+    - username
+    - name
+  default_value: me
+  parametrization: PARAMETER_REQUIRED
