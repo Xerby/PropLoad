@@ -16,7 +16,7 @@ using one of the following static methods:
 - `PropertyDictionary loadFromResourceFile(String fileName, boolean caseSensitive)`
 - `PropertyDictionary loadFromFile(File file, boolean caseSensitive)`
 
-Here's an example of a YAML file:
+Here's an example of a [YAML file](/src/test/resources/example.yaml):
 
 ```yaml
 # MongoDB

@@ -2,7 +2,10 @@
 To enable the library to work with properties, they must first be registered. This can be achieved by either creating a
 property using a class
 and invoking the register method or by generating a YAML file and loading it using one of the static methods of the
-class.
+class. You can see an examples of a [yaml file](/src/test/resources/example.yaml) in test directory, as well as an
+example
+of generating a file programmatically
+in [SharedTestCommand.java](/src/test/java/ru/xerby/propload/SharedTestCommands.java) file.
 
 The `PropertyDefinition` class comprises the following
 properties: `description`, `defaultValue`, `parametrization`,
