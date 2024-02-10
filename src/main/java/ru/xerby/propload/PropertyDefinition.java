@@ -24,6 +24,7 @@ public class PropertyDefinition {
     private final String defaultValue;//can't have defaultValue and be parameterless at the same time
     private final ParametrizationDegree parametrization;
     private final boolean isRequired; //can't be isRequired and hasDefaultValue at the same time
+    private final boolean isSensitive;
     private final ParamType paramType;
     private final String[] cmdAliases;
     private final char charCmdAlias;
@@ -35,6 +36,7 @@ public class PropertyDefinition {
             @JsonProperty("default_Value") String defaultValue,
             @JsonProperty("parametrized") ParametrizationDegree parametrized,
             @JsonProperty("required") boolean isRequired,
+            @JsonProperty("sensitive") boolean isSensitive,
             @JsonProperty("param_type") ParamType paramType,
             @JsonProperty("char_cmd_alias") char charCmdAlias,
             @JsonProperty("cmd_aliases") String... cmdAliases) {
@@ -43,6 +45,7 @@ public class PropertyDefinition {
         this.defaultValue = defaultValue;
         this.parametrization = parametrized;
         this.isRequired = isRequired;
+        this.isSensitive = isSensitive;
         this.paramType = paramType;
         this.cmdAliases = cmdAliases;
         this.charCmdAlias = charCmdAlias;
@@ -58,19 +61,27 @@ public class PropertyDefinition {
     }
 
     public PropertyDefinition(String name, String description, String defaultValue, ParametrizationDegree parametrized, boolean isRequired, ParamType paramType) {
-        this(name, description, defaultValue, parametrized, isRequired, paramType, '\0', (String[]) null);
+        this(name, description, defaultValue, parametrized, isRequired, false, paramType, '\0', (String[]) null);
+    }
+
+    public PropertyDefinition(String name, String description, String defaultValue, ParametrizationDegree parametrized, boolean isRequired, boolean isSensitive, ParamType paramType) {
+        this(name, description, defaultValue, parametrized, isRequired, isSensitive, paramType, '\0', (String[]) null);
     }
 
     public static PropertyDefinition createParameterlessProperty(String name, String description) {
-        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_PROHIBITED, false, null);
+        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_PROHIBITED, false, false,null);
     }
 
     public static PropertyDefinition createKeyValueRequiredProperty(String name, String description) {
-        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, true, ParamType.STRING);
+        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, true, false, ParamType.STRING);
     }
 
     public static PropertyDefinition createKeyValueOptionalProperty(String name, String description) {
-        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, false, ParamType.STRING);
+        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, false, false, ParamType.STRING);
+    }
+
+    public static PropertyDefinition createSensitiveProperty(String name, String description, boolean isRequired) {
+        return new PropertyDefinition(name, description, null, ParametrizationDegree.PARAMETER_REQUIRED, isRequired, true, ParamType.STRING);
     }
 
     protected void validate() {

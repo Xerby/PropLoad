@@ -24,6 +24,7 @@ DB_USERNAME:
   required: true
 DB_PASSWORD:
   required: true
+  sensitive: true
 
 # Encoding server
 SERVER_PORT:

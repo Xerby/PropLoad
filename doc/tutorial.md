@@ -7,14 +7,12 @@ example
 of generating a file programmatically
 in [SharedTestCommand.java](/src/test/java/ru/xerby/propload/SharedTestCommands.java) file.
 
-The `PropertyDefinition` class comprises the following
-properties: `description`, `defaultValue`, `parametrization`,
-`isRequired`, `paramType`, `cmdAliases`, `charCmdAlias`, and `name`. You can instantiate the `PropertyDefinition` class
-either using the constructor by
-defining all the properties or using one of the helper methods, such
-as `createParameterlessProperty`, `createKeyValueRequiredProperty`, or `createKeyValueOptionalProperty`.
-Examples of creating properties using these methods can be found in
-the [`SharedTestCommands`](../src/test/java/ru/xerby/propload/SharedTestCommands.java) test class.
+The `PropertyDefinition` class comprises the following properties: `description`, `defaultValue`, 
+`parametrization`, `isRequired`, `isSensitive`, `paramType`, `cmdAliases`, `charCmdAlias`, and `name`. 
+You can instantiate the `PropertyDefinition` class either using the constructor by defining all the properties 
+or using one of the helper methods, such as `createParameterlessProperty`, `createKeyValueRequiredProperty`,
+`createSensitiveProperty`, or `createKeyValueOptionalProperty`.
+Examples of creating properties using these methods can be found in the [`SharedTestCommands`](../src/test/java/ru/xerby/propload/SharedTestCommands.java) test class.
 
 The second approach involves creating a YAML file with the necessary properties and loading it either from resources or
 from a third-party file.
@@ -28,6 +26,7 @@ DB_USERNAME:
   parametrization: PARAMETER_REQUIRED
 DB_PASSWORD:
   required: true
+  sensitive: true
   param_type: STRING
   parametrization: PARAMETER_REQUIRED
 # Encoding server
@@ -40,6 +39,7 @@ OUTPUT_DIRECTORY:
   char_cmd_alias: o
 SERVER_PORT:
   required: false
+  sensitive: false
   default_value: 8080
   param_type: INTEGER
   parametrization: PARAMETER_REQUIRED
