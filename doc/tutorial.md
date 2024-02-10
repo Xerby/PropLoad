@@ -71,6 +71,10 @@ status.
 If a property is marked as required and is missing, it will throw an exception. In contrast, optional properties will be
 ignored if they are not present.
 
+Properties can be marked as "sensitive," meaning that their values should not be displayed in logs or other output.
+Sensitive properties are often used for passwords, API keys, and other confidential information. When using 
+PropertyLoader.toString() method it shows the value of sensitive properties as "***".
+
 Properties can also have default values. If a property has a default value defined and still lacks a value after loading
 from all sources,
 it will be set to the default value.
@@ -188,6 +192,9 @@ After this, you will be able to use the properties. You can get a Map<String, St
 by calling the propertyLoader.getProperties() method, or you can take the properties one at a time. In the latter case,
 you can not only take them as strings using the get(String name) method, but also get typed values using the getAsInt,
 getAsDouble and getAsBoolean methods.
+
+You also can use toString method to see the properties were loaded in the PropertyLoader. It will show all the properties
+names and values except the sensitive ones. If the property is sensitive, the value will be replaced with "***".
 
 **Example**
 An example of working with the library:
