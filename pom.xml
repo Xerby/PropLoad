@@ -6,7 +6,7 @@
 
     <groupId>ru.xerby</groupId>
     <artifactId>propload</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
