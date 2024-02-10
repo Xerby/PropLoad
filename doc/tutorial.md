@@ -7,14 +7,12 @@ example
 of generating a file programmatically
 in [SharedTestCommand.java](/src/test/java/ru/xerby/propload/SharedTestCommands.java) file.
 
-The `PropertyDefinition` class comprises the following
-properties: `description`, `defaultValue`, `parametrization`,
-`isRequired`, `paramType`, `cmdAliases`, `charCmdAlias`, and `name`. You can instantiate the `PropertyDefinition` class
-either using the constructor by
-defining all the properties or using one of the helper methods, such
-as `createParameterlessProperty`, `createKeyValueRequiredProperty`, or `createKeyValueOptionalProperty`.
-Examples of creating properties using these methods can be found in
-the [`SharedTestCommands`](../src/test/java/ru/xerby/propload/SharedTestCommands.java) test class.
+The `PropertyDefinition` class comprises the following properties: `description`, `defaultValue`, 
+`parametrization`, `isRequired`, `isSensitive`, `paramType`, `cmdAliases`, `charCmdAlias`, and `name`. 
+You can instantiate the `PropertyDefinition` class either using the constructor by defining all the properties 
+or using one of the helper methods, such as `createParameterlessProperty`, `createKeyValueRequiredProperty`,
+`createSensitiveProperty`, or `createKeyValueOptionalProperty`.
+Examples of creating properties using these methods can be found in the [`SharedTestCommands`](../src/test/java/ru/xerby/propload/SharedTestCommands.java) test class.
 
 The second approach involves creating a YAML file with the necessary properties and loading it either from resources or
 from a third-party file.
@@ -28,6 +26,7 @@ DB_USERNAME:
   parametrization: PARAMETER_REQUIRED
 DB_PASSWORD:
   required: true
+  sensitive: true
   param_type: STRING
   parametrization: PARAMETER_REQUIRED
 # Encoding server
@@ -40,6 +39,7 @@ OUTPUT_DIRECTORY:
   char_cmd_alias: o
 SERVER_PORT:
   required: false
+  sensitive: false
   default_value: 8080
   param_type: INTEGER
   parametrization: PARAMETER_REQUIRED
@@ -70,6 +70,10 @@ Properties can be categorized as either "required" or "optional," with the "requ
 status.
 If a property is marked as required and is missing, it will throw an exception. In contrast, optional properties will be
 ignored if they are not present.
+
+Properties can be marked as "sensitive," meaning that their values should not be displayed in logs or other output.
+Sensitive properties are often used for passwords, API keys, and other confidential information. When using 
+PropertyLoader.toString() method it shows the value of sensitive properties as "***".
 
 Properties can also have default values. If a property has a default value defined and still lacks a value after loading
 from all sources,
@@ -188,6 +192,9 @@ After this, you will be able to use the properties. You can get a Map<String, St
 by calling the propertyLoader.getProperties() method, or you can take the properties one at a time. In the latter case,
 you can not only take them as strings using the get(String name) method, but also get typed values using the getAsInt,
 getAsDouble and getAsBoolean methods.
+
+You also can use toString method to see the properties were loaded in the PropertyLoader. It will show all the properties
+names and values except the sensitive ones. If the property is sensitive, the value will be replaced with "***".
 
 **Example**
 An example of working with the library:

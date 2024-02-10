@@ -16,20 +16,21 @@ public class SharedTestCommands {
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueRequiredProperty("DB_user", "Database user"));
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueOptionalProperty("DB_Password", "Database password"));
         propertyDictionary.registerProperty(new PropertyDefinition("main_username", null, "me",
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.STRING, 'u', "user", "username", "name"));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, false, PropertyDefinition.ParamType.STRING,
+                'u', "user", "username", "name"));
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueOptionalProperty("server_URL", "SR2E server URL"));
         propertyDictionary.registerProperty(PropertyDefinition.createParameterlessProperty("Delayed",
                 "Program will show main window not right away after run, but in a minute (suitable for use with autorun, so as not to annoy the user with the appearance of the program even before the operating system is fully loaded)"));
         propertyDictionary.registerProperty(PropertyDefinition.createParameterlessProperty("scheduled",
                 "Program will show main window not right away after run, but check schedule and show only if time is right (suitable use with autorun)"));
         propertyDictionary.registerProperty(new PropertyDefinition("DelayTime", "Value for delay after program starts", "60s",
-                PropertyDefinition.ParametrizationDegree.PARAMETER_OPTIONAL, false, PropertyDefinition.ParamType.STRING));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_OPTIONAL, false, false, PropertyDefinition.ParamType.STRING));
         propertyDictionary.registerProperty(new PropertyDefinition("DEBUG", "Is debug mode enabled", null,
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, true, PropertyDefinition.ParamType.BOOLEAN, 'd'));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, true, false, PropertyDefinition.ParamType.BOOLEAN, 'd'));
         propertyDictionary.registerProperty(new PropertyDefinition("TTL", "Server timeout (in millis)", "3000",
                 PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.INTEGER));
         propertyDictionary.registerProperty(new PropertyDefinition("DN", "I don't know what property it must be", null,
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.FLOAT, '\0', "dunno"));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, false, PropertyDefinition.ParamType.FLOAT, '\0', "dunno"));
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueOptionalProperty("CITY", null));
 
         return propertyDictionary;
@@ -42,9 +43,10 @@ public class SharedTestCommands {
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueRequiredProperty("DB_PATH", "Path to database"));
         propertyDictionary.registerProperty(PropertyDefinition.createKeyValueRequiredProperty("DB_user", "Database user"));
         propertyDictionary.registerProperty(new PropertyDefinition("main_username", null, null,
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.STRING, 'u', "user", "username", "name"));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, false, PropertyDefinition.ParamType.STRING,
+                'u', "user", "username", "name"));
         propertyDictionary.registerProperty(new PropertyDefinition("ttl", "Server timeout (in millis)", "3000",
-                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.INTEGER, 'T'));
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, false, PropertyDefinition.ParamType.INTEGER, 'T'));
         propertyDictionary.registerProperty(new PropertyDefinition("Dn", "I don't know what property it must be", null,
                 PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.FLOAT));
 
@@ -65,6 +67,23 @@ public class SharedTestCommands {
                 PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.INTEGER));
         propertyDictionary.registerProperty(new PropertyDefinition("DNskfjsadkfasjdflsafj", "I don't know what property it must be", null,
                 PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.FLOAT));
+
+        return propertyDictionary;
+    }
+
+    public static PropertyDictionary createTestPropertyDictionaryWithSensitiveData() {
+        PropertyDictionary propertyDictionary = new PropertyDictionary();
+
+        propertyDictionary.registerProperty(PropertyDefinition.createKeyValueRequiredProperty("DB_PATH", "Path to database"));
+        propertyDictionary.registerProperty(PropertyDefinition.createSensitiveProperty("DB_user", "Database user", true));
+        propertyDictionary.registerProperty(new PropertyDefinition("main_username", null, null,
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, false, PropertyDefinition.ParamType.STRING, 'u', "user", "username", "name"));
+        propertyDictionary.registerProperty(new PropertyDefinition("user_password", "password to enter the website", null,
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, true, PropertyDefinition.ParamType.STRING, 'p', "pass", "password", "pwd"));
+        propertyDictionary.registerProperty(new PropertyDefinition("ttl", "Server timeout (in millis)", "3000",
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, false, PropertyDefinition.ParamType.INTEGER, 'T'));
+        propertyDictionary.registerProperty(new PropertyDefinition("Dn", "I don't know what property it must be", null,
+                PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, false, PropertyDefinition.ParamType.FLOAT));
 
         return propertyDictionary;
     }

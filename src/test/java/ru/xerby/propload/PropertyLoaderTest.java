@@ -54,6 +54,29 @@ public class PropertyLoaderTest {
     }
 
     @Test
+    public void LoaderToStringTest() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionaryWithSensitiveData();
+        environmentVariables.set("DB_PATH", "/opt/server/oracle/12.2");
+        environmentVariables.set("DB_USER", "Egor");
+        environmentVariables.set("DB_PASS", "Zoldberg");
+        environmentVariables.set("main_username", "Egor Konstantinovich");
+        environmentVariables.set("user_password", "228282666");
+        environmentVariables.set("TTL", "5");
+        environmentVariables.set("DN", "3.1415");
+
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
+        propertyLoader.setThrowExceptionIfUnknownEnvPropertyFound(false);
+        propertyLoader.loadFromEnvironment();
+
+        String data = propertyLoader.toString();
+        Assert.assertTrue(data.contains("DB_PATH: /opt/server/oracle/12.2"));
+        Assert.assertTrue(data.contains("DB_USER: ***"));
+        Assert.assertFalse(data.contains("DB_PASS"));
+        Assert.assertTrue(data.contains("main_username: Egor Konstantinovich"));
+        Assert.assertTrue(data.contains("user_password: ***"));
+    }
+
+    @Test
     public void loadFromEnvironmentWithPrefixParamTypesTest() {
         PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
         environmentVariables.set("test_for_prefix.DB_USER", "Egor");

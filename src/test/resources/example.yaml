@@ -4,6 +4,7 @@ DB_PASSWORD:
   name: DB_Password
   description: Database password
   required: true
+  sensitive: true
   parametrization: PARAMETER_REQUIRED
 DB_PATH:
 

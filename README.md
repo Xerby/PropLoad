@@ -24,6 +24,7 @@ DB_USERNAME:
   required: true
 DB_PASSWORD:
   required: true
+  sensitive: true
 
 # Encoding server
 SERVER_PORT:
@@ -66,6 +67,8 @@ having the highest priority, followed by external files, environment variables, 
 parameter values (if specified).
 The `envPropertyPrefix` parameter ensures that only variables with the specified prefix are considered, minimizing the
 risk of conflicts with variables from other programs.
+You can use toString method to see the properties were loaded in the PropertyLoader. It will show all the properties names 
+and values except the sensitive ones. If the property is sensitive, the value will be replaced with "***".
 
 **Using Properties**
 

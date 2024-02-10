@@ -358,4 +358,15 @@ public class PropertyLoader {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> prop : properties.entrySet()) {
+            sb.append(prop.getKey()).append(": ");
+            sb.append(propertyDictionary.get(prop.getKey()).isSensitive() ? "***" : prop.getValue());
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 }
