@@ -163,10 +163,10 @@ using the property-file key on the command line or the property-file environment
 To load properties, you need to create and configure an instance of
 the [`PropertyLoader`](../src/main/java/ru/xerby/propload/PropertyLoader.java) class.
 The `PropertyLoader` is responsible for loading, validating, and consolidating properties from various sources
-based on the settings and data from the provided `PropertyRepository`. First create `PropertyLoader` passing
-a `PropertyRepository` to its constructor.
+based on the settings and data from the provided `PropertyDictionary`. First create `PropertyLoader` passing
+a `PropertyDictionary` to its constructor.
 
-`PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);`
+`PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);`
 
 Then you can configure it to allow or deny properties specified in a Windows-style command line (e.g., /key),
 set whether property values can be specified without an equal sign (e.g., "key value"), and more.
@@ -206,9 +206,9 @@ public class Settings {
     private final int serverPort;
 
     public static Settings loadApplicationProperties(String[] args) {
-        PropertyDictionary propertyRepository = PropertyDictionary.loadFromResource("properties.yaml", false);
+        PropertyDictionary propertyDictionary = PropertyDictionary.loadFromResource("properties.yaml", false);
 
-        PropertyLoader propertyLoader = new PropertyLoader(propertyRepository);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
 
         propertyLoader.setThrowExceptionIfPropertyResourceNotFound(false);
         String externalPropFilename = new File("encodingServlet.properties").getAbsolutePath();

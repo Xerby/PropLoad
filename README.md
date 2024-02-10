@@ -48,10 +48,10 @@ more.
 
 **Loading Properties**
 
-To load properties, at first create an instance of the `PropertyLoader` class, passing a `PropertyRepository` to it.
+To load properties, at first create an instance of the `PropertyLoader` class, passing a `PropertyDictionary` to it.
 The `PropertyLoader` is responsible for loading, validating, and consolidating properties from various sources based on
 the settings
-and data from the provided `PropertyRepository`. After creating a `PropertyLoader`, you can configure it to allow
+and data from the provided `PropertyDictionary`. After creating a `PropertyLoader`, you can configure it to allow
 properties
 specified in a Windows-style command line (e.g., /key), set whether property values can be specified without an equal
 sign (e.g., "key value"), and more.

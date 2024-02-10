@@ -12,7 +12,7 @@ import java.util.TreeMap;
 
 /**
  * This class is responsible for loading properties from different sources. Properties that should or can be loaded
- * are listed in the {@link PropertyDictionary}; if the property is not in the repository, then it will not be loaded,
+ * are listed in the {@link PropertyDictionary}; if the property is not in the dictionary, then it will not be loaded,
  * even if it is present in one of the sources.
  * <p>If the same property is present in different sources, then preference is given to higher priority sources.
  * The command line has maximum priority, then the external settings file, then the environment and then
