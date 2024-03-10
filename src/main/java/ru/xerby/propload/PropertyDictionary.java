@@ -15,6 +15,8 @@ import java.util.TreeMap;
 /**
  * The class is responsible for loading and storing definitions of properties that must or may be present.
  * Any work with properties should start with this class.
+ * The dictionary is used to determine which properties should be available in the program and how to handle
+ * situations when they are absent.
  * Properties are case-insensitive by default, but it can be changed using a one-parameter constructor.
  * The most straightforward way to load properties is to use the static method loadFromFile or loadFromResource.
  */
