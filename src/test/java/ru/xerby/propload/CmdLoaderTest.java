@@ -310,4 +310,34 @@ public class CmdLoaderTest {
             Assert.assertEquals("unknown property \"name\" was found in command line arguments", e.getMessage().toLowerCase());
         }
     }
+
+    @Test
+    public void nullInsteadOfTypedValueTest() {
+        PropertyDictionary propertyDictionary = SharedTestCommands.createTestPropertyDictionary();
+        PropertyLoader propertyLoader;
+        String[] cmdArgs;
+
+        cmdArgs = new String[]{"--DelayTime", "--delayed"};
+        propertyLoader = new PropertyLoader(propertyDictionary);
+        propertyLoader.loadFromCmdArgs(cmdArgs);
+
+        try {
+            propertyLoader.getAsBoolean("delayed");
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().contains("should have been a boolean, but it is null"));
+        }
+        try {
+            propertyLoader.getAsDouble("DelayTime");
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().contains("should have been a number, but it is null"));
+        }
+        try {
+            propertyLoader.getAsInt("int");
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().contains("should have been an integer, but it is null"));
+        }
+    }
 }

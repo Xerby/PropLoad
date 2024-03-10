@@ -323,7 +323,7 @@ public class PropertyLoader {
 
     private boolean getAsBoolean(String propValue, String keyForLogging) {
         if (propValue == null)
-            return false;
+            throw new IllegalArgumentException(keyForLogging + " should have been a boolean, but it is null");
         else {
             String value = propValue.strip().toLowerCase();
             if (value.equals("true") || value.equals("t") || value.equals("yes") || value.equals("1") || value.equals("y"))

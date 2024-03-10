@@ -473,4 +473,37 @@ public class PropertyLoaderTest {
             Assert.assertEquals("Property \"DB_PATH\" is required, but it's not set", e.getMessage());
         }
     }
+
+    @Test
+    public void propertyFileOrResourceNotFoundTest() {
+        PropertyDictionary propertyDictionary = new PropertyDictionary(true);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
+        propertyLoader.setThrowExceptionIfExternalPropertyFileNotFound(true);
+        propertyLoader.setThrowExceptionIfPropertyResourceNotFound(true);
+
+        try {
+            propertyLoader.buildProperties(null, "absent.file", "test.", null);
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().contains("External property file") && e.getMessage().contains("absent.file not found"));
+        }
+
+        try {
+            propertyLoader.buildProperties(null, null, "test.", "madeUpResource.properties");
+            Assert.fail("Should throw exception, but it didn't");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().contains("Resource") && e.getMessage().contains("madeUpResource.properties not found"));
+        }
+
+
+        Assert.assertTrue(propertyLoader.isCaseSensitive());
+    }
+
+    @Test
+    public void caseSensitiveInLoaderFromDictionaryTest() {
+        PropertyDictionary propertyDictionary = new PropertyDictionary(true);
+        PropertyLoader propertyLoader = new PropertyLoader(propertyDictionary);
+
+        Assert.assertTrue(propertyLoader.isCaseSensitive());
+    }
 }
