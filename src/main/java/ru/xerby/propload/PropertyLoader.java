@@ -294,6 +294,9 @@ public class PropertyLoader {
             case INTEGER:
                 getAsInt(propValue, propName);
                 break;
+            case LONG:
+                getAsLong(propValue, propName);
+                break;
             case BOOLEAN:
                 getAsBoolean(propValue, propName);
                 break;
@@ -311,6 +314,10 @@ public class PropertyLoader {
 
     public int getAsInt(String key) {
         return getAsInt(properties.get(key), key);
+    }
+
+    public long getAsLong(String key) {
+        return getAsLong(properties.get(key), key);
     }
 
     public double getAsDouble(String key) {
@@ -341,6 +348,18 @@ public class PropertyLoader {
         else {
             try {
                 return Integer.parseInt(propValue);
+            } catch (NumberFormatException e) {
+                throw new NumberFormatException(keyForLogging + " should have been an integer, but input string: \"" + propValue + "\"");
+            }
+        }
+    }
+
+    private long getAsLong(String propValue, String keyForLogging) {
+        if (propValue == null)
+            throw new NumberFormatException(keyForLogging + " should have been an integer, but it is null");
+        else {
+            try {
+                return Long.parseLong(propValue);
             } catch (NumberFormatException e) {
                 throw new NumberFormatException(keyForLogging + " should have been an integer, but input string: \"" + propValue + "\"");
             }

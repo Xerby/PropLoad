@@ -110,5 +110,5 @@ public class PropertyDefinition {
     /**
      * What type of parameter can be used with a property. STRING by default
      */
-    public enum ParamType {BOOLEAN, STRING, INTEGER, FLOAT}
+    public enum ParamType {BOOLEAN, STRING, INTEGER, LONG, FLOAT}
 }
