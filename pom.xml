@@ -7,39 +7,51 @@
     <groupId>ru.xerby</groupId>
     <artifactId>propload</artifactId>
     <version>1.2-SNAPSHOT</version>
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <jackson_version>[2.14.2, 2.99.99]</jackson_version>
+        <slf4j_version>[2.0.17, 2.0.99]</slf4j_version>
+        <logback_version>[1.5.17, 1.9.99]</logback_version>
+        <junit_version>4.13.2</junit_version>
+        <lombok_version>[1.18.36, 1.99.99]</lombok_version>
+        <rules_version>[1.19.0, 1.99.99]</rules_version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.14.2</version>
+            <version>${jackson_version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
+            <version>${lombok_version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.5</version>
+            <version>${slf4j_version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.12</version>
+            <version>${logback_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <version>${junit_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
-            <version>1.19.0</version>
+            <version>${rules_version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -50,12 +62,4 @@
             <url>https://maven.pkg.github.com/xerby/propload</url>
         </repository>
     </distributionManagement>
-
-
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
 </project>
