@@ -30,7 +30,7 @@ import java.util.TreeMap;
 public class PropertyLoader {
 
     private static final String DEFAULT_INNER_PROPERTY_FILE_NAME = "properties.properties";
-    private static final String REDEFINED_PROPERTY_FILE_PROPERTY_NAME = "property-file";
+    private static final String REDEFINED_PROPERTY_FILE_PROPERTY_NAME = "property-file";//todo: add to documentation
     @Getter(AccessLevel.NONE)
     private final PropertyDictionary propertyDictionary;
     private final Map<String, String> properties;
@@ -215,12 +215,13 @@ public class PropertyLoader {
                 properties.put(propName, propertyDefinition.getDefaultValue());
         }
     }
-
+    //todo: доавить возможность при старте указывать, типа "ждём файл с настройками в таком-то месте или энв с таким то префиксов"
+    //todo: и чтобы об ожидаемых опциях можно было писать
     public void buildProperties(String[] commandLineArgs,
                                 String externalPropertyFilePath,
                                 String envPropertyPrefix,
                                 String resourceName) {
-        if (canRedefineExternalPropertyFile)
+        if (canRedefineExternalPropertyFile)//todo: надо сделать чтобы редефайнед проперти файл можно было сделать и через энвайронмент
             propertyDictionary.registerProperty(new PropertyDefinition(REDEFINED_PROPERTY_FILE_PROPERTY_NAME, "Path to external properties file",
                     null, PropertyDefinition.ParametrizationDegree.PARAMETER_REQUIRED, false, PropertyDefinition.ParamType.STRING));
 
@@ -288,7 +289,7 @@ public class PropertyLoader {
             else
                 throw new IllegalArgumentException("Property \"" + propName + "\" is parameterless, but its value is " + propValue);
 
-        switch (paramType) {
+        switch (paramType) {//todo: add tests for long
             case STRING:
                 break;
             case INTEGER:
