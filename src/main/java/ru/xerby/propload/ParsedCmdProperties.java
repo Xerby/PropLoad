@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @EqualsAndHashCode
@@ -112,13 +113,18 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
         return null;
     }
 
-    public String getValue(String key) {
+    protected ParsedCmdProperty get(String key) {
         for (ParsedCmdProperty parsedCmdProperty : properties) {
             if (parsedCmdProperty.getKey().equals(key)) {
-                return parsedCmdProperty.getValue();
+                return parsedCmdProperty;
             }
         }
         return null;
+    }
+
+    public String getValue(String key) {
+        ParsedCmdProperty parsedCmdProperty = get(key);
+        return parsedCmdProperty != null ? parsedCmdProperty.getValue() : null;
     }
 
     public boolean isSurelyParametrized(String key) {
@@ -131,12 +137,17 @@ class ParsedCmdProperties implements Iterable<ParsedCmdProperty> {
     }
 
     public boolean containsKey(String key) {
-        for (ParsedCmdProperty parsedCmdProperty : properties) {
-            if (parsedCmdProperty.getKey().equals(key)) {
-                return true;
-            }
-        }
-        return false;
+        return get(key) != null;
+    }
+
+    public List<String> getKeys() {
+        return properties.stream().map(ParsedCmdProperty::getKey).collect(Collectors.toList());
+    }
+
+    public void remove(String key) {
+        ParsedCmdProperty parsedCmdProperty = get(key);
+        if (parsedCmdProperty != null)
+            properties.remove(parsedCmdProperty);
     }
 
     public boolean isEmpty() {
