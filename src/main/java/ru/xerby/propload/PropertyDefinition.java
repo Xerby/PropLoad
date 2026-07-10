@@ -33,7 +33,7 @@ public class PropertyDefinition {
     public PropertyDefinition(
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
-            @JsonProperty("default_Value") String defaultValue,
+            @JsonProperty("default_value") String defaultValue,
             @JsonProperty("parametrized") ParametrizationDegree parametrized,
             @JsonProperty("required") boolean isRequired,
             @JsonProperty("sensitive") boolean isSensitive,
