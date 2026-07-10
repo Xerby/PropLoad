@@ -1,13 +1,16 @@
 package ru.xerby.propload;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.SneakyThrows;
 import lombok.Synchronized;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -51,19 +54,22 @@ public class PropertyDictionary extends TreeMap<String, PropertyDefinition> {
 
     @SneakyThrows
     public static PropertyDictionary loadFromInputStream(InputStream stream, boolean caseSensitive) {
-        PropertyDictionary propertyDictionary = new ObjectMapper(new YAMLFactory()).readValue(stream, PropertyDictionary.class);
+        //deserialize into a plain map first: Jackson would instantiate PropertyDictionary via its no-arg constructor and lose caseSensitive
+        Map<String, PropertyDefinition> loadedDefinitions = new ObjectMapper(new YAMLFactory())
+                .readValue(stream, new TypeReference<LinkedHashMap<String, PropertyDefinition>>() {
+                });
 
+        PropertyDictionary propertyDictionary = new PropertyDictionary(caseSensitive);
+        propertyDictionary.putAll(loadedDefinitions);
         propertyDictionary.adjustNames();
         return propertyDictionary;
     }
 
     @SneakyThrows
-    @SuppressWarnings("java:S2864")
     public static PropertyDictionary loadFromFile(File file, boolean caseSensitive) {
-        PropertyDictionary propertyDictionary = new ObjectMapper(new YAMLFactory()).readValue(file, PropertyDictionary.class);
-
-        propertyDictionary.adjustNames();
-        return propertyDictionary;
+        try (InputStream stream = new FileInputStream(file)) {
+            return loadFromInputStream(stream, caseSensitive);
+        }
     }
 
     private boolean areKeysEqual(char o1, char o2) {

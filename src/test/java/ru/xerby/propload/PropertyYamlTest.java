@@ -124,6 +124,34 @@ public class PropertyYamlTest {
     }
 
     @Test
+    public void loadCaseSensitiveResourceTest() {
+        PropertyDictionary propertyDictionary = PropertyDictionary.loadFromResource("example.yaml", true);
+        Assert.assertTrue("Dictionary loaded with caseSensitive=true must be case-sensitive", propertyDictionary.caseSensitive);
+        Assert.assertEquals("Check that all properties were loaded", 7, propertyDictionary.size());
+        Assert.assertNotNull("Key in its original case must be found", propertyDictionary.get("DB_PATH"));
+        Assert.assertNull("Key in a different case must not be found in a case-sensitive dictionary", propertyDictionary.get("db_path"));
+
+        propertyDictionary = PropertyDictionary.loadFromResource("example.yaml", false);
+        Assert.assertFalse("Dictionary loaded with caseSensitive=false must be case-insensitive", propertyDictionary.caseSensitive);
+        Assert.assertNotNull("Key in a different case must be found in a case-insensitive dictionary", propertyDictionary.get("db_path"));
+    }
+
+    @Test
+    public void loadCaseSensitiveFileTest() {
+        File exampleFile = Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "example.yaml").toFile();
+
+        PropertyDictionary propertyDictionary = PropertyDictionary.loadFromFile(exampleFile, true);
+        Assert.assertTrue("Dictionary loaded with caseSensitive=true must be case-sensitive", propertyDictionary.caseSensitive);
+        Assert.assertEquals("Check that all properties were loaded", 7, propertyDictionary.size());
+        Assert.assertNull("Key in a different case must not be found in a case-sensitive dictionary", propertyDictionary.get("db_path"));
+        Assert.assertNotNull("Key in its original case must be found", propertyDictionary.get("DB_PATH"));
+
+        propertyDictionary = PropertyDictionary.loadFromFile(exampleFile, false);
+        Assert.assertFalse("Dictionary loaded with caseSensitive=false must be case-insensitive", propertyDictionary.caseSensitive);
+        Assert.assertNotNull("Key in a different case must be found in a case-insensitive dictionary", propertyDictionary.get("db_path"));
+    }
+
+    @Test
     public void loadBuggedResourceTest() {
         try {
             PropertyDictionary.loadFromResource("bugged_example.yaml", false);
