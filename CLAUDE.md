@@ -104,9 +104,9 @@ Jackson uses `SnakeCaseStrategy`, so YAML fields are snake_case versions of the 
 
 ## Gotchas and conventions
 
-- **Jackson is deliberately pinned to 2.17.x** (`[2.17.2, 2.17.99]` in pom.xml): Jackson 2.19 broke deserialization of
-  `PropertyDictionary` (a `TreeMap` subclass) — see commit 5a4dbae. Do not bump it without running `PropertyYamlTest`.
-- All dependencies use Maven **version ranges** (e.g. `[1.18.36, 1.99.99]`), not fixed versions.
+- **Dependency versions are fixed** (plain versions in pom.xml properties; Dependabot opens monthly update PRs — see
+  `.github/dependabot.yml`). Historical context: versions used to be Maven *ranges*, and a range is a hard constraint
+  that overrides the Jackson version declared in consuming applications.
 - YAML loading deserializes into a plain `LinkedHashMap` first and then copies into
   `new PropertyDictionary(caseSensitive)` — deserializing straight into `PropertyDictionary` would go through the no-arg
   constructor and silently drop the `caseSensitive` argument (regression tests: `loadCaseSensitive*` in

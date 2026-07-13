@@ -12,12 +12,12 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jackson_version>[2.17.2, 2.17.99]</jackson_version>
-        <slf4j_version>[2.0.17, 2.0.99]</slf4j_version>
-        <logback_version>[1.5.17, 1.9.99]</logback_version>
+        <jackson_version>2.21.5</jackson_version>
+        <slf4j_version>2.0.18</slf4j_version>
+        <logback_version>1.5.38</logback_version>
         <junit_version>4.13.2</junit_version>
-        <lombok_version>[1.18.36, 1.99.99]</lombok_version>
-        <rules_version>[1.19.0, 1.99.99]</rules_version>
+        <lombok_version>1.18.46</lombok_version>
+        <rules_version>1.19.0</rules_version>
     </properties>
     <dependencies>
         <dependency>
